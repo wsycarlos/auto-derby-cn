@@ -140,9 +140,11 @@ class RaceCommand(Command):
         tmpl, pos = action.wait_image(
             templates.SINGLE_MODE_LIVE_BUTTON,
             templates.SINGLE_MODE_RACE_NEXT_BUTTON,
+            templates.TEAM_RACE_NEXT_BUTTON,
         )
         if tmpl.name == templates.SINGLE_MODE_LIVE_BUTTON:
             g.on_winning_live(ctx)
+            action.wait_tap_image(templates.TEAM_RACE_NEXT_BUTTON)
         action.tap_image(templates.TEAM_RACE_NEXT_BUTTON)
 
     def score(self, ctx: Context) -> float:

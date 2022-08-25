@@ -15,9 +15,9 @@ from ..scene import Scene, SceneHolder
 
 
 def _recognize_name(img: Image) -> Text:
-    img = imagetools.resize(img, height=48)
+    img = imagetools.resize(img, height=60)
     cv_img = imagetools.cv_image(img.convert("L"))
-    _, binary_img = cv2.threshold(cv_img, 120, 255, cv2.THRESH_BINARY_INV)
+    _, binary_img = cv2.threshold(cv_img, 160, 255, cv2.THRESH_BINARY_INV)
 
     app.log.image(
         "name",

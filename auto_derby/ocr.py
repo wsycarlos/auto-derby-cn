@@ -60,7 +60,7 @@ def _migrate_json_to_csv() -> None:
 def reload() -> None:
     _migrate_json_to_csv()
     _g.labels.clear()
-    _g.labels.load_once(data.path("ocr_labels.csv"))
+    #_g.labels.load_once(data.path("ocr_labels.csv"))
     _g.labels.load_once(g.data_path)
     _g.labels.save_path = g.data_path
 
