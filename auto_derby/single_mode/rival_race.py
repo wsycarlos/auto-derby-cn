@@ -10,6 +10,8 @@ from .. import data, filetools
 from .context import Context
 from ..character import Character
 
+from ..localization import Localization
+
 
 class Repository(Protocol):
     def replace_data(self, it: Iterator[RivalRace], /) -> None:
@@ -100,7 +102,7 @@ class JSONLRepository(Repository):
     def _from_po(self, data: Dict[Text, Any]) -> RivalRace:
         return RivalRace(
             data["turn"],
-            data["name"],
+            Localization.Find(data["name"]),
             data["characterIDs"],
         )
 

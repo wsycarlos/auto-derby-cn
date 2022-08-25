@@ -23,6 +23,8 @@ from ...constants import RunningStyle
 from . import race_score, running_style_score
 from .globals import g
 
+from ...localization import Localization
+
 if TYPE_CHECKING:
     from ..context import Context
 
@@ -363,7 +365,7 @@ class Race:
     @classmethod
     def _deprecated_from_dict(cls, data: Dict[Text, Any]) -> Race:
         self = cls()
-        self.name = data["name"]
+        self.name = Localization.Find(data["name"])
         self.permission = data["permission"]
         self.month = data["month"]
         self.half = data["half"]
@@ -383,7 +385,7 @@ class Race:
         self.fan_counts = tuple(data["fanCounts"])
         self.shop_coins = tuple(data.get("shopCoins", []))
         self.grade_points = tuple(data.get("gradePoints", []))
-        self.characters = set(data.get("characters", []))
+        self.characters = Localization.FindSet(set(data.get("characters", [])))
         return self
 
     def _deprecated_distance_status(self, ctx: Context) -> Tuple[int, Text]:
@@ -466,7 +468,7 @@ class JSONLRepository(Repository):
         do = Race.new()
 
         do.id = data["id"]
-        do.grade = data["grade"]
+        do.grade = Localization.Find(data["grade"])
         do.name = data["name"]
         do.permission = data["permission"]
         do.month = data["month"]
@@ -478,7 +480,7 @@ class JSONLRepository(Repository):
         do.fan_counts = tuple(data["fanCounts"])
         do.shop_coins = tuple(data.get("shopCoins", []))
         do.grade_points = tuple(data.get("gradePoints", []))
-        do.characters = set(data.get("characters", []))
+        do.characters = Localization.FindSet(set(data.get("characters", [])))
         return do
 
     def replace_data(self, it: Iterator[Race], /) -> None:

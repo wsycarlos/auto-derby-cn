@@ -32,6 +32,8 @@ from ..character import Character
 from ..constants import Mood, TrainingType
 from . import condition
 
+from ..localization import Localization
+
 
 class g:
     context_class: Type[Context]
@@ -39,9 +41,9 @@ class g:
 
 def _year4_date_text(ctx: Context) -> Iterator[Text]:
     if ctx.scenario in (ctx.SCENARIO_URA, ctx.SCENARIO_AOHARU, ctx.SCENARIO_UNKNOWN):
-        yield "ファイナルズ開催中"
+        yield Localization.Find("ファイナルズ開催中")
     if ctx.scenario in (ctx.SCENARIO_CLIMAX, ctx.SCENARIO_UNKNOWN):
-        yield "クライマックス開催中"
+        yield Localization.Find("クライマックス開催中")
 
 
 def _ocr_date(ctx: Context, img: Image) -> Tuple[int, int, int]:
@@ -82,7 +84,7 @@ def _ocr_date(ctx: Context, img: Image) -> Tuple[int, int, int]:
 
     text = ocr.text(image_from_array(binary_img))
 
-    if texttools.compare(text, "ジュニア級デビュー前") > 0.8:
+    if texttools.compare(text, Localization.Find("ジュニア級デビュー前")) > 0.8:
         return (1, 0, 0)
     for i in _year4_date_text(ctx):
         if texttools.compare(text, i) > 0.8:
@@ -93,7 +95,7 @@ def _ocr_date(ctx: Context, img: Image) -> Tuple[int, int, int]:
     month_text = text[year_end:month_end]
     date_text = text[month_end:]
 
-    year_dict = {"ジュニア級": 1, "クラシック級": 2, "シニア級": 3}
+    year_dict = {Localization.Find("ジュニア級"): 1, Localization.Find("クラシック級"): 2, Localization.Find("シニア級"): 3}
     year = year_dict[texttools.choose(year_text, year_dict.keys())]
     month = int(month_text[:-1])
     date = {"前半": 1, "後半": 2}[date_text]
@@ -135,7 +137,7 @@ def _recognize_fan_count(img: Image) -> int:
     _, binary_img = cv2.threshold(cv_img, 50, 255, cv2.THRESH_BINARY_INV)
     app.log.image("fan count", cv_img, level=app.DEBUG, layers={"binary": binary_img})
     text = ocr.text(imagetools.pil_image(binary_img))
-    return int(text.rstrip("人").replace(",", ""))
+    return int(text.rstrip("人").replace(",", "").replace("，",""))
 
 
 def _recognize_status(img: Image) -> Tuple[int, Text]:
@@ -266,9 +268,9 @@ class Context:
     # master.mdb
     # SELECT text FROM text_data WHERE category=119;
     SCENARIO_UNKNOWN = ""
-    SCENARIO_URA = "新設！　URAファイナルズ！！"
-    SCENARIO_AOHARU = "アオハル杯～輝け、チームの絆～"
-    SCENARIO_CLIMAX = "Make a new track!!  ～クライマックス開幕～"
+    SCENARIO_URA = Localization.Find("新設！　URAファイナルズ！！")
+    SCENARIO_AOHARU = Localization.Find("アオハル杯～輝け、チームの絆～")
+    SCENARIO_CLIMAX = Localization.Find("Make a new track!!  ～クライマックス開幕～")
 
     @staticmethod
     def new() -> Context:

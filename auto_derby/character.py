@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterator, Protocol, Text, Tuple
 
 from . import data, filetools
 
+from .localization import Localization
 
 class Gender(enum.Enum):
     STALLION = 1
@@ -87,9 +88,9 @@ class JSONLRepository(Repository):
     def _from_po(self, data: Dict[Text, Any]) -> Character:
         return Character(
             data["id"],
-            data["name"],
-            data["realName"],
-            data["katakana"],
+            Localization.Find(data["name"]),
+            Localization.Find(data["realName"]),
+            Localization.Find(data["katakana"]),
             data["voice"],
             tuple(data["birthday"]),
             Gender[data["gender"]],
