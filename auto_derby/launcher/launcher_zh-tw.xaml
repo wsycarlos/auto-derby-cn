@@ -11,6 +11,7 @@
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
+      <RowDefinition Height="80" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition />
@@ -72,12 +73,24 @@
     </StackPanel>
 
     <StackPanel Grid.Row="5">
+      <Label>
+        <TextBlock>
+          Target training values (seperated by comma, omit value for default)
+          <LineBreak />
+          `600,600,600,0,` means speed=600 stamina=600 power=600 guts=0 wisdom=default
+        </TextBlock>
+      </Label>
+      <TextBox Text="{Binding TargetTrainingValues, UpdateSourceTrigger=PropertyChanged}"
+        MaxLines="1" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="6">
       <Label>Pause if race order greater than</Label>
       <TextBox Text="{Binding PauseIfRaceOrderGt, UpdateSourceTrigger=PropertyChanged}"
         MaxLines="1" />
     </StackPanel>
 
-    <StackPanel Grid.Row="6">
+    <StackPanel Grid.Row="7">
       <Label>Plugins seperated by comma</Label>
       <Grid>
         <Grid.ColumnDefinitions>
@@ -92,9 +105,9 @@
     </StackPanel>
 
     <Button x:Name="startButton"
-      Grid.Row="7">Start</Button>
+      Grid.Row="8">Start</Button>
 
-    <StackPanel Grid.Row="8"
+    <StackPanel Grid.Row="9"
       Margin="8"
       Orientation="Horizontal"
       HorizontalAlignment="Right">

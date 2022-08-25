@@ -49,6 +49,11 @@ namespace NateScarlet.AutoDerby
                 Label = "Long",
                 Value = "long",
             });
+            Add(new Option()
+            {
+                Label = "Custom",
+                Value = "custom",
+            });
         }
     }
 
