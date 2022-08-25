@@ -68,8 +68,8 @@ class Course:
     TURN_NONE = 4
 
     _TURN_TEXT = {
-        TURN_RIGHT: "右",
-        TURN_LEFT: "左",
+        TURN_RIGHT: "順",
+        TURN_LEFT: "逆",
         TURN_NONE: "直線",
     }
 

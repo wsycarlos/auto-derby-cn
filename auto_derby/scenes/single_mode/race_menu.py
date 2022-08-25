@@ -47,14 +47,14 @@ def _race_by_course(ctx: Context, course: Course) -> Iterator[Race]:
 
 
 _TURN_TRACK_SPEC = {
-    "左·内": (Course.TURN_LEFT, Course.TRACK_IN),
-    "右·内": (Course.TURN_RIGHT, Course.TRACK_IN),
-    "左": (Course.TURN_LEFT, Course.TRACK_MIDDLE),
-    "右": (Course.TURN_RIGHT, Course.TRACK_MIDDLE),
-    "左·外": (Course.TURN_LEFT, Course.TRACK_OUT),
-    "右·外": (Course.TURN_RIGHT, Course.TRACK_OUT),
+    "逆·内": (Course.TURN_LEFT, Course.TRACK_IN),
+    "順·内": (Course.TURN_RIGHT, Course.TRACK_IN),
+    "逆": (Course.TURN_LEFT, Course.TRACK_MIDDLE),
+    "順": (Course.TURN_RIGHT, Course.TRACK_MIDDLE),
+    "逆·外": (Course.TURN_LEFT, Course.TRACK_OUT),
+    "順·外": (Course.TURN_RIGHT, Course.TRACK_OUT),
     "直線": (Course.TURN_NONE, Course.TRACK_MIDDLE),
-    "右·外→内": (Course.TURN_RIGHT, Course.TRACK_OUT_TO_IN),
+    "順·外→内": (Course.TURN_RIGHT, Course.TRACK_OUT_TO_IN),
 }
 
 
@@ -67,17 +67,22 @@ def _recognize_course(img: Image) -> Course:
     app.log.image("spec", cv_img, level=app.DEBUG, layers={"binary": binary_img})
     text = ocr.text(imagetools.pil_image(binary_img))
     stadium, text = text[:2], text[2:]
-    if text[0] == "芝":
-        text = text[1:]
+    if text[0] == "草":
+        text = text[2:]
         ground = Course.GROUND_TURF
-    elif text[0] == "ダ":
-        text = text[3:]
+    elif text[0] == "沙":
+        text = text[2:]
         ground = Course.GROUND_DART
     else:
         raise ValueError("_recognize_spec: invalid spec: %s", text)
 
-    distance, text = int(text[:4]), text[10:]
-
+    distance, text = int(text[:4]), text[6:]
+    
+    if text[0] == "一":
+        text = text[3:]
+    else:
+        text = text[4:]
+    
     turn, track = _TURN_TRACK_SPEC[texttools.choose(text, _TURN_TRACK_SPEC.keys())]
 
     return Course(
