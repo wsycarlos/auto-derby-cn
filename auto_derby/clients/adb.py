@@ -113,7 +113,7 @@ class ADBClient(Client):
         return self._screenshot()
 
     def _screenshot_png(self) -> PIL.Image.Image:
-        img_data = self.device.shell(
+        img_data = self.device.exec_out(
             f"screencap -p",
             decode=False,
             transport_timeout_s=None,
@@ -123,7 +123,7 @@ class ADBClient(Client):
 
     def _screenshot_raw(self) -> PIL.Image.Image:
         # https://stackoverflow.com/a/59470924
-        img_data = self.device.shell(
+        img_data = self.device.exec_out(
             f"screencap",
             decode=False,
             transport_timeout_s=None,
