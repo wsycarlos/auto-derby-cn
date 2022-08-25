@@ -16,6 +16,8 @@ class g:
     training_class: Type[Training]
     partner_class: Type[Partner]
     target_levels: Dict[TrainingType, int] = {}
+    target_values: Dict[TrainingType, int] = {}
+    traget_distance: str
 
     # deprecated
     image_path: str = ""  # replaced by web log

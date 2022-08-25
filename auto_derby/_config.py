@@ -36,6 +36,28 @@ def _parse_training_levels(spec: Text) -> Dict[TrainingType, int]:
                 RuntimeWarning,
             )
     return ret
+    
+def _parse_training_values(spec: Text) -> Dict[TrainingType, int]:
+    ret: Dict[TrainingType, int] = {}
+    for k, v in zip(
+        (
+            Training.TYPE_SPEED,
+            Training.TYPE_STAMINA,
+            Training.TYPE_POWER,
+            Training.TYPE_GUTS,
+            Training.TYPE_WISDOM,
+        ),
+        spec.split(","),
+    ):
+        if not v:
+            continue
+        ret[k] = int(v)
+        if ret[k] > 1200:
+            warnings.warn(
+                "target training value greater than 1200 has same effect as 1200",
+                RuntimeWarning,
+            )
+    return ret
 
 
 def _default_on_single_mode_crane_game(ctx: single_mode.Context) -> None:
@@ -125,6 +147,10 @@ class config:
     single_mode_target_training_levels = _parse_training_levels(
         os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_LEVELS", "")
     )
+    single_mode_target_training_values = _parse_training_values(
+        os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES", "")
+    )
+    single_mode_target_distance = os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_DISTANCE", "short")
     use_legacy_screenshot = (
         os.getenv("AUTO_DERBY_USE_LEGACY_SCREENSHOT", "").lower() == "true"
     )
@@ -174,6 +200,8 @@ class config:
         single_mode.race.g.race_class = cls.single_mode_race_class
         single_mode.training.g.image_path = cls.single_mode_training_image_path
         single_mode.training.g.target_levels = cls.single_mode_target_training_levels
+        single_mode.training.g.target_values = cls.single_mode_target_training_values
+        single_mode.training.g.traget_distance = cls.single_mode_target_distance
         single_mode.training.g.training_class = cls.single_mode_training_class
         single_mode.training.g.partner_class = cls.single_mode_training_partner_class
         single_mode.item.g.label_path = cls.single_mode_item_label_path
