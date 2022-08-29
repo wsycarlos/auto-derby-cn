@@ -87,6 +87,7 @@ class Course:
         distance: int,
         track: int,
         turn: int,
+        entry_count: int = 0,
         target_statuses: Tuple[int, ...] = (),
     ) -> None:
         self.stadium = stadium
@@ -94,6 +95,7 @@ class Course:
         self.distance = distance
         self.track = track
         self.turn = turn
+        self.entry_count = entry_count
         self.target_statuses = target_statuses
 
     def __str__(self):
@@ -114,7 +116,7 @@ class Course:
             and self.ground == o.ground
             and self.track == o.track
             and self.turn == o.turn
-            # not compare target status since it doesn't make a course different.
+            # not compare other fields since they don't makes a course different.
         )
 
     def distance_status(self, ctx: Context) -> Tuple[int, Text]:
@@ -191,12 +193,10 @@ class Race:
         self.month: int = 0
         self.half: int = 0
         self.grade: int = 0
-        self.entry_count: int = 0
         self.min_fan_count: int = 0
 
         self.courses: Tuple[Course, ...] = ()
         self.fan_counts: Tuple[int, ...] = ()
-        self.characters: Set[Text] = set()
         self.grade_points: Tuple[int, ...] = ()
         self.shop_coins: Tuple[int, ...] = ()
 
@@ -276,7 +276,7 @@ class Race:
                 int(best_style_score),
                 (
                     (0, 100),
-                    (5000, self.entry_count * 0.5),
+                    (5000, self._deprecated_entry_count * 0.5),
                     (6500, 5),
                     (7000, 3),
                     (9000, 2),
@@ -284,7 +284,7 @@ class Race:
                 ),
             )
         )
-        estimate_order = min(self.entry_count, estimate_order)
+        estimate_order = min(self._deprecated_entry_count, estimate_order)
         app.log.text(
             "estimate order: race=%s, order=%d, style_scores=%s"
             % (
@@ -306,14 +306,6 @@ class Race:
 
     def score(self, ctx: Context) -> float:
         return race_score.compute(ctx, self)
-
-    def is_target_race(self, ctx: Context) -> Optional[bool]:
-        """return None when result is unknown."""
-
-        if not self.characters:
-            return None
-        if len(self.characters) < 10:
-            return True
 
     def is_available(self, ctx: Context) -> Optional[bool]:
         """return None when result is unknown."""
@@ -362,6 +354,19 @@ class Race:
     def _deprecated_distance(self):
         return self.courses[0].distance
 
+    @property
+    def _deprecated_entry_count(self):
+        return self.courses[0].entry_count
+
+    @property
+    def _deprecated_characters(self) -> Set[Text]:
+        return set()
+
+    def _deprecated_is_target_race(self, ctx: Context) -> Optional[bool]:
+        """return None when result is unknown."""
+
+        return None
+
     def _deprecated_to_dict(self) -> Dict[Text, Any]:
         return {
             "stadium": self._deprecated_stadium,
@@ -372,7 +377,7 @@ class Race:
             "permission": self.permission,
             "month": self.month,
             "half": self.half,
-            "entryCount": self.entry_count,
+            "entryCount": self._deprecated_entry_count,
             "track": self._deprecated_track,
             "turn": self._deprecated_turn,
             "targetStatuses": self._deprecated_target_statuses,
@@ -380,7 +385,7 @@ class Race:
             "fanCounts": self.fan_counts,
             "gradePoints": self.grade_points,
             "shopCoins": self.shop_coins,
-            "characters": sorted(self.characters),
+            "characters": sorted(self._deprecated_characters),
         }
 
     @classmethod
@@ -391,7 +396,6 @@ class Race:
         self.month = data["month"]
         self.half = data["half"]
         self.grade = data["grade"]
-        self.entry_count = data["entryCount"]
         self.courses = (
             Course(
                 stadium=data["stadium"],
@@ -399,6 +403,7 @@ class Race:
                 distance=data["course"],
                 track=data["track"],
                 turn=data["turn"],
+                entry_count=data["entryCount"],
                 target_statuses=tuple(data["targetStatuses"]),
             ),
         )
@@ -406,7 +411,6 @@ class Race:
         self.fan_counts = tuple(data["fanCounts"])
         self.shop_coins = tuple(data.get("shopCoins", []))
         self.grade_points = tuple(data.get("gradePoints", []))
-        self.characters = Localization.FindSet(set(data.get("characters", [])))
         return self
 
     def _deprecated_distance_status(self, ctx: Context) -> Tuple[int, Text]:
@@ -449,6 +453,7 @@ class JSONLRepository(Repository):
             "track": do.track,
             "turn": do.turn,
             "targetStatuses": do.target_statuses,
+            "entryCount": do.entry_count,
         }
 
     def _to_po(self, do: Race) -> Dict[Text, Any]:
@@ -460,18 +465,18 @@ class JSONLRepository(Repository):
             "grade": do.grade,
             "name": do.name,
             "courses": tuple(self._course_to_po(i) for i in do.courses),
-            "entryCount": do.entry_count,
             "minFanCount": do.min_fan_count,
             "fanCounts": do.fan_counts,
             "gradePoints": do.grade_points,
             "shopCoins": do.shop_coins,
-            "characters": sorted(do.characters),
             # deprecated fields
+            "characters": sorted(do._deprecated_characters),  # type: ignore
             "stadium": do._deprecated_stadium,  # type: ignore
             "distance": do._deprecated_distance,  # type: ignore
             "ground": do._deprecated_ground,  # type: ignore
             "track": do._deprecated_track,  # type: ignore
             "turn": do._deprecated_turn,  # type: ignore
+            "entryCount": do._deprecated_entry_count,  # type: ignore
         }
 
     def _course_from_po(self, po: Dict[Text, Any]) -> Course:
@@ -482,6 +487,7 @@ class JSONLRepository(Repository):
             distance=po["distance"],
             track=po["track"],
             turn=po["turn"],
+            entry_count=po["entryCount"],
             target_statuses=tuple(po["targetStatuses"]),
         )
 
@@ -489,19 +495,17 @@ class JSONLRepository(Repository):
         do = Race.new()
 
         do.id = data["id"]
-        do.grade = Localization.Find(data["grade"])
-        do.name = data["name"]
+        do.grade = data["grade"]
+        do.name = Localization.Find(data["name"])
         do.permission = data["permission"]
         do.month = data["month"]
         do.half = data["half"]
         do.grade = data["grade"]
-        do.entry_count = data["entryCount"]
         do.courses = tuple(self._course_from_po(i) for i in data["courses"])
         do.min_fan_count = data["minFanCount"]
         do.fan_counts = tuple(data["fanCounts"])
         do.shop_coins = tuple(data.get("shopCoins", []))
         do.grade_points = tuple(data.get("gradePoints", []))
-        do.characters = Localization.FindSet(set(data.get("characters", [])))
         return do
 
     def replace_data(self, it: Iterator[Race], /) -> None:
@@ -535,6 +539,9 @@ Race.repository = JSONLRepository(data.path("single_mode_races.jsonl"))
 # Deprecated members, removal on v2
 # spell-checker: disable
 
+Race.characters = Race._deprecated_characters  # type: ignore
+Race.entry_count = Race._deprecated_entry_count  # type: ignore
+Race.is_target_race = Race._deprecated_is_target_race  # type: ignore
 Race.turn = Race._deprecated_turn  # type: ignore
 Race.stadium = Race._deprecated_stadium  # type: ignore
 Race.ground = Race._deprecated_ground  # type: ignore
