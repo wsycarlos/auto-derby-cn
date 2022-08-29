@@ -12,6 +12,8 @@ from .. import Context, Race, RaceResult
 from .command import Command
 from .globals import g
 
+from PIL.Image import Image
+
 
 def _choose_running_style(ctx: Context, race1: Race) -> None:
     scene = PaddockScene.enter(ctx)
@@ -46,17 +48,41 @@ def _retry_method(ctx: Context) -> Optional[Callable[[], None]]:
 
 
 def _handle_race_result(ctx: Context, race: Race):
-    action.wait_tap_image(templates.RACE_RESULT_BUTTON)
+
+    tmpl, pos = action.wait_image(templates.RACE_RESULT_BUTTON, templates.GO_TO_RACE_BUTTON)
 
     res = RaceResult()
     res.ctx = ctx.clone()
     res.race = race
+    order_img: Image = Image()
 
-    tmpl, pos = action.wait_image(*_RACE_ORDER_TEMPLATES.keys())
-    order_img = app.device.screenshot()
+    if tmpl.name == templates.GO_TO_RACE_BUTTON:
+        app.device.tap(action.template_rect(tmpl, pos))
+        action.wait_tap_image(templates.RACE_START_BUTTON)
+        while True:
+            tmpl, pos = action.wait_image(
+                templates.SKIP_BUTTON,
+                templates.CLOSE_BUTTON,
+                templates.GREEN_NEXT_BUTTON,
+                )
+            if tmpl.name == templates.CLOSE_BUTTON:
+                order_img = app.device.screenshot()
+                res.order = 1
+                app.device.tap(action.template_rect(tmpl, pos))
+                break
+            elif tmpl.name == templates.GREEN_NEXT_BUTTON:
+                order_img = app.device.screenshot()
+                res.order = 10
+                break
+            else:
+                app.device.tap(action.template_rect(tmpl, pos))
+    else:
+        app.device.tap(action.template_rect(tmpl, pos))
+        tmpl, pos = action.wait_image(*_RACE_ORDER_TEMPLATES.keys())
+        order_img = app.device.screenshot()
 
-    res.order = _RACE_ORDER_TEMPLATES[tmpl.name]
-    app.device.tap(action.template_rect(tmpl, pos))
+        res.order = _RACE_ORDER_TEMPLATES[tmpl.name]
+        app.device.tap(action.template_rect(tmpl, pos))
 
     if ctx.scenario == ctx.SCENARIO_CLIMAX and ctx.date[0] < 4:
         tmpl, pos = action.wait_image_stable(
@@ -124,10 +150,11 @@ class RaceCommand(Command):
         while True:
             tmpl, pos = action.wait_image(
                 templates.RACE_RESULT_BUTTON,
+                templates.GO_TO_RACE_BUTTON,
                 templates.SINGLE_MODE_RACE_START_BUTTON,
                 templates.RETRY_BUTTON,
             )
-            if tmpl.name == templates.RACE_RESULT_BUTTON:
+            if tmpl.name == templates.RACE_RESULT_BUTTON or tmpl.name == templates.GO_TO_RACE_BUTTON:
                 break
             app.device.tap(action.template_rect(tmpl, pos))
         ctx.race_turns.add(ctx.turn_count())
