@@ -43,6 +43,8 @@ def _race_by_course(ctx: Context, course: Course) -> Iterator[Race]:
             continue
         if i.is_available(ctx) == False:
             continue
+        if course not in i.courses:
+            continue
         yield i
 
 
