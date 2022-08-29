@@ -15,8 +15,8 @@ default_speed_matrix = ((0, 2.0), (300, 1.0), (600, 0.8), (900, 0.7), (1100, 0.5
 
 default_short_stamina_matrix = ((0, 2.0), (200, 1.0), (300, 0.8), (350, 0.7), (400, 0.5), (450, 0.1))
 default_miles_stamina_matrix = ((0, 2.0), (300, 1.0), (400, 0.8), (500, 0.6), (600, 0.4), (650, 0.1))
-default_medium_stamina_matrix = ((0, 2.0), (300, 1.0), (500, 0.8), (600, 0.6), (800, 0.4), (850, 0.1))
-default_long_stamina_matrix = ((0, 2.0), (300, 1.0), (600, 0.8), (850, 0.5), (1080, 0.3), (1120, 0.1))
+default_medium_stamina_matrix = ((0, 2.0), (400, 1.0), (600, 0.8), (700, 0.6), (800, 0.4), (850, 0.1))
+default_long_stamina_matrix = ((0, 2.0), (450, 1.0), (650, 0.8), (850, 0.5), (1080, 0.3), (1120, 0.1))
 
 def compute(ctx: Context, trn: Training) -> float:
     t_now = ctx.turn_count_v2()
@@ -101,8 +101,8 @@ def compute_target_value(ctx_value:int, trn_value:int, target_value: int) -> flo
 
     matrix = (
         (0, 2.0),
-        ((int)(target_value * 0.25), 1.0),
-        ((int)(target_value * 0.5), 0.8),
+        ((int)(target_value * 0.5), 1.0),
+        ((int)(target_value * 0.75), 0.8),
         (target_value, 0.5),
         ((int)(target_value * 1.1), 0.1)
     )
