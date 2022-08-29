@@ -20,4 +20,4 @@ single_mode_choices.csv
 
 .env
 
-/data
+single_mode_race_results.jsonl
