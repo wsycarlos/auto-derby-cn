@@ -104,8 +104,17 @@ def option_tips():
         ocr_pairing = UraraWin.Get_OCRPairing(name_text)
 
         if ocr_pairing != None:
-            found = True
-            options = ocr_pairing.Options
+            if len(ocr_pairing) <= 1:
+                found = True
+                options = ocr_pairing[0].Options
+            else:
+                for e in ocr_pairing:
+                    o_str = ""
+                    for o in e.Options:
+                        o_str += UraraWin.Translated(o.Option)
+                    if fuzz.token_set_ratio(o_str, options_text) > 85:
+                        found = True
+                        options = e.Options
         else:
             for event in UraraWin.Get_Events():
                 if fuzz.ratio(name_text, UraraWin.Translated(event.Name)) > 85:
@@ -122,20 +131,36 @@ def option_tips():
                 UraraWin.Add_OCRPairing(name_text, UraraWin.Translated(event.Name))
                 UraraWin.Reload()
             else:
-                choices = process.extractBests(name_text, UraraWin.GetEventsChoices(), limit = 5)
+                event_choices = process.extractBests(name_text, UraraWin.GetEventsChoices(), limit = 5)
                 ans = ""
                 while ans not in ["1", "2", "3", "4", "5"]:
                     app.log.text(("OCR Result: [%s]")%(name_text))
-                    for c in choices:
-                        e = UraraWin.GetEventFromTranslatedText(c[0])
-                        o_str = ""
-                        for o in e.Options:
-                            o_str += UraraWin.Translated(o.Option)
-                        app.log.text(("Potential Option: [%s]:[%s] with score of %s")%(c[0], o_str, c[1]))
+                    for c in event_choices:
+                        events = UraraWin.GetEventFromTranslatedText(c[0])
+                        if len(events) <= 1:
+                            o_str = ""
+                            for o in events[0].Options:
+                                o_str += UraraWin.Translated(o.Option)
+                            app.log.text(("Potential Option: [%s]:[%s] with score of %s")%(c[0], o_str, c[1]))
+                        else:
+                            app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
                     ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
                 ret = int(ans) - 1
-                _c = choices[ret][0]
-                _e = UraraWin.GetEventFromTranslatedText(_c)
+                _c = event_choices[ret][0]
+
+                options_for_choice = UraraWin.GetOptionChoices(_c)
+                option_choices = process.extractBests(options_text, options_for_choice, limit = 5)
+                ans = ""
+                while ans not in ["1", "2", "3", "4", "5"]:
+                    app.log.text(("OCR Result: [%s]")%(options_text))
+                    for c in option_choices:
+                        app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
+                    ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
+                ret = int(ans) - 1
+                _o_choice_text = option_choices[ret][0]
+                _o_index = options_for_choice.index(_o_choice_text)
+                _e = UraraWin.GetEventFromTranslatedText(_c)[_o_index]
+
                 _rewrite = ""
                 while _rewrite not in ["Y", "n"]:
                     _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%_c)
@@ -164,7 +189,17 @@ def option_tips():
                 if ocr_pairing == None:
                     terminal.pause("Something went wrong for OCR Pairing in Option selection")
                 else:
-                    options = ocr_pairing.Options
+                    if len(ocr_pairing) <= 1:
+                        found = True
+                        options = ocr_pairing[0].Options
+                    else:
+                        for e in ocr_pairing:
+                            o_str = ""
+                        for e in e.Options:
+                            o_str += UraraWin.Translated(o.Option)
+                        if fuzz.token_set_ratio(o_str, options_text) > 85:
+                            found = True
+                            options = e.Options
 
         if found:
             

@@ -2,7 +2,6 @@
 # pyright: strict
 
 from __future__ import annotations
-from textwrap import indent
 
 from typing import Any, Dict, List, Text
 
@@ -54,7 +53,7 @@ class UraraWin:
     json_correction_localized_path: Any = None
     json_pair_data_path = None
     events: List[UraraEvent]
-    _dict: Dict[Text, UraraEvent]
+    _dict: Dict[Text, List[UraraEvent]]
     _pair: Dict[Text, Text]
 
     def __init__(self, path: Text, localized_path: Text, correction_path: Text, pair_data_path: Text) -> None:
@@ -78,32 +77,50 @@ class UraraWin:
 
     def combine_events(self):
         self.events: List[UraraEvent] = []
-        self._dict: Dict[Text, UraraEvent] = {}
+        self._dict: Dict[Text, List[UraraEvent]] = {}
         for c1 in self._data.Charactor.three_star.values():
             self.events.extend(c1.Event)
             for e in c1.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
         for c2 in self._data.Charactor.two_star.values():
             self.events.extend(c2.Event)
             for e in c2.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
         for c3 in self._data.Charactor.one_star.values():
             self.events.extend(c3.Event)
             for e in c3.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
 
         for s1 in self._data.Support.SSR.values():
             self.events.extend(s1.Event)
             for e in s1.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
         for s2 in self._data.Support.SR.values():
             self.events.extend(s2.Event)
             for e in s2.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
         for s3 in self._data.Support.R.values():
             self.events.extend(s3.Event)
             for e in s3.Event:
-                self._dict[self.translated(e.Name)]=e
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                self._dict[cn].append(e)
 
     @staticmethod
     def Get_OCRPairing(key: Text):
@@ -126,6 +143,19 @@ class UraraWin:
     @staticmethod
     def GetEventsChoices():
         return UraraWin.instance._dict.keys()
+
+    @staticmethod
+    def GetOptionChoices(cn: Text):
+        if cn in UraraWin.instance._dict:
+            _optionchoices:List[Text] = []
+            _events = UraraWin.instance._dict[cn]
+            for e in _events:
+                o_str = ""
+                for o in e.Options:
+                    o_str += UraraWin.Translated(o.Option)
+                _optionchoices.append(o_str)
+            return _optionchoices
+        return None
     
     @staticmethod
     def Get_Events()-> List[UraraEvent]: 
