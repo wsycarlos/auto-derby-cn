@@ -1,5 +1,3 @@
-from email.mime import image
-from threading import local
 import time
 import cv2
 
@@ -7,6 +5,7 @@ import numpy as np
 
 import threading
 
+from PIL.Image import Image
 import PySimpleGUI as sg
 import easyocr
 from zhconv import convert
@@ -34,10 +33,8 @@ def stop_for_watching(target_hwnd, window, offset_y):
             window.write_event_value('-THREAD-', 0)
             return
 
-def option_tips():
-    
+def find_game_window():
     target_window: wintools.WinWindow = None
-
     while True:
         windows = wintools.GetAllWindows()
         found = False
@@ -49,9 +46,89 @@ def option_tips():
             sg.set_options(font=("黑体", 10))
             sg.set_options(background_color='white')
             sg.set_options(text_color='red')
-            break
+            return target_window
         else:
             terminal.pause("Cannot find target window")
+
+def prompt_for_events(name_text: Text, choice_list: List[Text])-> Text:
+    event_choices = process.extractBests(name_text, choice_list, limit = 5)
+    ans = ""
+    while ans not in ["1", "2", "3", "4", "5"]:
+        app.log.text(("OCR Result: [%s]")%(name_text))
+        for c in event_choices:
+            events = UraraWin.GetEventFromTranslatedText(c[0])
+            if len(events) <= 1:
+                o_str = ""
+                for o in events[0].Options:
+                    o_str += UraraWin.Translated(o.Option)
+                app.log.text(("Potential Option: [%s]:[%s] with score of %s")%(c[0], o_str, c[1]))
+            else:
+                app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
+        ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
+    ret = int(ans) - 1
+    return event_choices[ret][0]
+
+def prompt_for_options(options_text: Text, choice_list: List[Text]):
+    option_choices = process.extractBests(options_text, choice_list, limit = 5)
+    ans = ""
+    while ans not in ["1", "2", "3", "4", "5"]:
+        app.log.text(("OCR Result: [%s]")%(options_text))
+        for c in option_choices:
+            app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
+        ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
+    ret = int(ans) - 1
+    return option_choices[ret][0]
+
+def rewrite_translation(old_text:Text, default_text:Text):
+    _rewrite = ""
+    while _rewrite not in ["Y", "n"]:
+        _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%old_text)
+    if _rewrite == "Y":
+        _new_text = terminal.prompt("Choose which text to put into translation data(Enter to use [%s]):\n"%default_text)
+        if _new_text == "":
+            _new_text = default_text
+        UraraWin.AddTranslation(old_text, _new_text)
+        return _new_text
+    return old_text
+
+def get_ocr_result(event_screen: Image):
+        
+    rp = mathtools.ResizeProxy(event_screen.width)
+    event_name_bbox = rp.vector4((75, 155, 305, 180), 466)
+    options_bbox = rp.vector4((50, 200, 400, 570), 466)
+    cv_event_name_img = np.asarray(event_screen.crop(event_name_bbox).convert("L"))
+    _, cv_event_name_img = cv2.threshold(cv_event_name_img, 220, 255, cv2.THRESH_TOZERO)
+    
+    cv_options_img = np.asarray(event_screen.crop(options_bbox).convert("L"))
+    
+    option_rows = (cv2.reduce(cv_options_img, 1, cv2.REDUCE_MAX) == 255).astype(
+        np.uint8
+    )
+    
+    option_mask = np.repeat(option_rows, cv_options_img.shape[1], axis=1)
+    cv_options_img = 255 - cv_options_img
+    cv_options_img *= option_mask
+    
+    _, cv_options_img = cv2.threshold(cv_options_img, 128, 255, cv2.THRESH_BINARY)
+
+    reader = easyocr.Reader(['ch_tra', 'en'])
+
+    name_result = reader.readtext(cv_event_name_img)
+    options_result = reader.readtext(cv_options_img)
+
+    return name_result, options_result
+
+def select_option(options_text:Text, option_choice_list: List[Text]):
+    option_choice = process.extractOne(options_text, option_choice_list)
+    if option_choice[1] < 80:
+        return prompt_for_options(options_text, option_choice_list)
+    else:
+        return option_choice[0]
+
+
+def option_tips():
+    
+    target_window: wintools.WinWindow = find_game_window()
 
     while True:
 
@@ -61,30 +138,9 @@ def option_tips():
             break
         
         time.sleep(0.2)  # wait animation
+        
         event_screen = app.device.screenshot(max_age=0)
-        
-        rp = mathtools.ResizeProxy(event_screen.width)
-        event_name_bbox = rp.vector4((75, 155, 305, 180), 466)
-        options_bbox = rp.vector4((50, 200, 400, 570), 466)
-        cv_event_name_img = np.asarray(event_screen.crop(event_name_bbox).convert("L"))
-        _, cv_event_name_img = cv2.threshold(cv_event_name_img, 220, 255, cv2.THRESH_TOZERO)
-        
-        cv_options_img = np.asarray(event_screen.crop(options_bbox).convert("L"))
-        
-        option_rows = (cv2.reduce(cv_options_img, 1, cv2.REDUCE_MAX) == 255).astype(
-            np.uint8
-        )
-        
-        option_mask = np.repeat(option_rows, cv_options_img.shape[1], axis=1)
-        cv_options_img = 255 - cv_options_img
-        cv_options_img *= option_mask
-        
-        _, cv_options_img = cv2.threshold(cv_options_img, 128, 255, cv2.THRESH_BINARY)
-
-        reader = easyocr.Reader(['ch_tra', 'en'])
-
-        name_result = reader.readtext(cv_event_name_img)
-        options_result = reader.readtext(cv_options_img)
+        name_result, options_result = get_ocr_result(event_screen)
 
         name_text = ""
         options_text = ""
@@ -101,105 +157,54 @@ def option_tips():
         found = False
         options = None
 
-        ocr_pairing = UraraWin.Get_OCRPairing(name_text)
+        ocr_pairing = UraraWin.GetOCRPairing(name_text)
 
         if ocr_pairing != None:
             if len(ocr_pairing) <= 1:
                 found = True
                 options = ocr_pairing[0].Options
             else:
-                for e in ocr_pairing:
-                    o_str = ""
-                    for o in e.Options:
-                        o_str += UraraWin.Translated(o.Option)
-                    if fuzz.token_set_ratio(o_str, options_text) > 85:
-                        found = True
-                        options = e.Options
-        else:
-            for event in UraraWin.Get_Events():
-                if fuzz.ratio(name_text, UraraWin.Translated(event.Name)) > 85:
-                    app.log.text(("Found Matched Name: [%s] vs. [%s]")%(name_text, UraraWin.Translated(event.Name)))
-                    o_str = ""
-                    for o in event.Options:
-                        o_str += UraraWin.Translated(o.Option)
-                    app.log.text(("Available Options: [%s] vs. [%s]")%(options_text, o_str))
-                    if fuzz.token_set_ratio(o_str, options_text) > 70:
-                        found = True
-                        options = event.Options
-
-            if found:
-                UraraWin.Add_OCRPairing(name_text, UraraWin.Translated(event.Name))
-                UraraWin.Reload()
-            else:
-                event_choices = process.extractBests(name_text, UraraWin.GetEventsChoices(), limit = 5)
-                ans = ""
-                while ans not in ["1", "2", "3", "4", "5"]:
-                    app.log.text(("OCR Result: [%s]")%(name_text))
-                    for c in event_choices:
-                        events = UraraWin.GetEventFromTranslatedText(c[0])
-                        if len(events) <= 1:
-                            o_str = ""
-                            for o in events[0].Options:
-                                o_str += UraraWin.Translated(o.Option)
-                            app.log.text(("Potential Option: [%s]:[%s] with score of %s")%(c[0], o_str, c[1]))
-                        else:
-                            app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
-                    ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
-                ret = int(ans) - 1
-                _c = event_choices[ret][0]
-
-                options_for_choice = UraraWin.GetOptionChoices(_c)
-                option_choices = process.extractBests(options_text, options_for_choice, limit = 5)
-                ans = ""
-                while ans not in ["1", "2", "3", "4", "5"]:
-                    app.log.text(("OCR Result: [%s]")%(options_text))
-                    for c in option_choices:
-                        app.log.text(("Potential Option: [%s] with score of %s")%(c[0], c[1]))
-                    ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
-                ret = int(ans) - 1
-                _o_choice_text = option_choices[ret][0]
-                _o_index = options_for_choice.index(_o_choice_text)
-                _e = UraraWin.GetEventFromTranslatedText(_c)[_o_index]
-
-                _rewrite = ""
-                while _rewrite not in ["Y", "n"]:
-                    _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%_c)
-                if _rewrite == "Y":
-                    _new_c = terminal.prompt("Choose which text to put into translation data(Enter to use [%s]):\n"%name_text)
-                    if _new_c == "":
-                        _new_c = name_text
-                    UraraWin.AddTranslation(_c, _new_c)
-                    _c = _new_c
-                for i in range(len(_e.Options)):
-                    _old_o = UraraWin.Translated(_e.Options[i].Option)
-                    _ocr_o = convert(options_result[i][1], "zh-cn")
-                    _rewrite = ""
-                    while _rewrite not in ["Y", "n"]:
-                        _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%_old_o)
-                    if _rewrite == "Y":
-                        _new_o = terminal.prompt("Choose which text to put into translation data(Enter to use [%s])\n"%_ocr_o)
-                        if _new_o == "":
-                            _new_o = _ocr_o
-                        UraraWin.AddTranslation(_old_o, _new_o)
-
+                _event_text = UraraWin.GetOCRPair(name_text)
+                _o_choice_list = UraraWin.GetOptionChoices(_event_text)
+                _o_choice_text = select_option(options_text, _o_choice_list)
+                _o_index = _o_choice_list.index(_o_choice_text)
                 found = True
-                UraraWin.Add_OCRPairing(name_text, _c)
-                UraraWin.Reload()
-                ocr_pairing = UraraWin.Get_OCRPairing(name_text)
-                if ocr_pairing == None:
-                    terminal.pause("Something went wrong for OCR Pairing in Option selection")
+                options = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index].Options
+        else:
+
+            _event_choice_text = prompt_for_events(name_text, UraraWin.GetEventsChoices())
+
+            _o_choice_list = UraraWin.GetOptionChoices(_event_choice_text)
+
+            _o_choice_text = prompt_for_options(options_text, _o_choice_list)
+            
+            _o_index = _o_choice_list.index(_o_choice_text)
+            _event = UraraWin.GetEventFromTranslatedText(_event_choice_text)[_o_index]
+
+            _event_choice_text = rewrite_translation(_event_choice_text, name_text)
+            
+            for i in range(len(_event.Options)):
+                _old_o = UraraWin.Translated(_event.Options[i].Option)
+                _ocr_o = convert(options_result[i][1], "zh-cn")
+                _old_o = rewrite_translation(_old_o, _ocr_o)
+
+            found = True
+            UraraWin.AddOCRPairing(name_text, _event_choice_text)
+            UraraWin.Reload()
+            ocr_pairing = UraraWin.GetOCRPairing(name_text)
+            if ocr_pairing == None:
+                terminal.pause("Something went wrong for OCR Pairing in Option selection")
+            else:
+                if len(ocr_pairing) <= 1:
+                    found = True
+                    options = ocr_pairing[0].Options
                 else:
-                    if len(ocr_pairing) <= 1:
-                        found = True
-                        options = ocr_pairing[0].Options
-                    else:
-                        for e in ocr_pairing:
-                            o_str = ""
-                        for o in e.Options:
-                            o_str += UraraWin.Translated(o.Option)
-                        if fuzz.token_set_ratio(o_str, options_text) > 85:
-                            found = True
-                            options = e.Options
+                    _event_text = UraraWin.GetOCRPair(name_text)
+                    _o_choice_list = UraraWin.GetOptionChoices(_event_text)
+                    _o_choice_text = select_option(options_text, _o_choice_list)
+                    _o_index = _o_choice_list.index(_o_choice_text)
+                    found = True
+                    options = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index].Options
 
         if found:
             

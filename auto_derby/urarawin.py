@@ -123,12 +123,15 @@ class UraraWin:
                 self._dict[cn].append(e)
 
     @staticmethod
-    def Get_OCRPairing(key: Text):
+    def GetOCRPair(key: Text):
         if key in UraraWin.instance._pair:
-            p = UraraWin.instance._pair[key]
+            return UraraWin.instance._pair[key]
         else:
-            p = key
-        return UraraWin.GetEventFromTranslatedText(p)
+            return key
+
+    @staticmethod
+    def GetOCRPairing(key: Text):
+        return UraraWin.GetEventFromTranslatedText(UraraWin.GetOCRPair(key))
 
     @staticmethod
     def GetEventFromTranslatedText(cn: Text):
@@ -137,7 +140,7 @@ class UraraWin:
         return None
 
     @staticmethod
-    def Add_OCRPairing(key: Text, value: Text):
+    def AddOCRPairing(key: Text, value: Text):
         UraraWin.instance.add_ocr(key, value)
 
     @staticmethod
@@ -158,7 +161,7 @@ class UraraWin:
         return None
     
     @staticmethod
-    def Get_Events()-> List[UraraEvent]: 
+    def GetEvents()-> List[UraraEvent]: 
         return UraraWin.instance.events
     
     @staticmethod
