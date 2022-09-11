@@ -34,6 +34,8 @@ def main():
         "daily_race_money": lambda: jobs.daily_race(templates.MOONLIGHT_PRIZE),
         "daily_race_sp": lambda: jobs.daily_race(templates.JUPITER_CUP),
         "roulette_derby": jobs.roulette_derby,
+        "auto_options": jobs.auto_options,
+        "option_tips": jobs.option_tips,
     }
     parser = argparse.ArgumentParser()
     parser.add_argument("job")

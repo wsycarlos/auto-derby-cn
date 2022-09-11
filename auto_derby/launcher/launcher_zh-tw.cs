@@ -22,6 +22,16 @@ namespace NateScarlet.AutoDerby
                 Label = "Nurturing",
                 Value = "nurturing",
             });
+            Add(new Option()
+            {
+                Label = "Auto_Options",
+                Value = "auto_options",
+            });
+            Add(new Option()
+            {
+                Label = "Option_Tips",
+                Value = "option_tips",
+            });
         }
     }
 
@@ -183,7 +193,7 @@ namespace NateScarlet.AutoDerby
         {
             get
             {
-                return (int)key.GetValue("CheckUpdate", 1) != 0;
+                return (int)key.GetValue("CheckUpdate", 0) != 0;
             }
             set
             {
