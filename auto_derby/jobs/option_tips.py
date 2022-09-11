@@ -195,7 +195,7 @@ def option_tips():
                     else:
                         for e in ocr_pairing:
                             o_str = ""
-                        for e in e.Options:
+                        for o in e.Options:
                             o_str += UraraWin.Translated(o.Option)
                         if fuzz.token_set_ratio(o_str, options_text) > 85:
                             found = True
