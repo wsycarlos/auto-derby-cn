@@ -2,6 +2,7 @@
 # pyright: strict
 
 from __future__ import annotations
+from textwrap import indent
 
 from typing import Any, Dict, List, Text
 
@@ -47,24 +48,31 @@ class UraraWin:
     instance: UraraWin
     _data: UraraData
     _localized_data: Dict[Text, Text]
+    _correction_data: Dict[Text, Text]
     json_data_path: Any = None
     json_localized_path: Any = None
+    json_correction_localized_path: Any = None
     json_pair_data_path = None
     events: List[UraraEvent]
     _dict: Dict[Text, UraraEvent]
     _pair: Dict[Text, Text]
 
-    def __init__(self, path: Text, localized_path: Text, pair_data_path: Text) -> None:
+    def __init__(self, path: Text, localized_path: Text, correction_path: Text, pair_data_path: Text) -> None:
         self.json_data_path = data.path(path)
         self.json_localized_path = data.path(localized_path)
+        self.json_correction_localized_path = data.path(correction_path)
         self.json_pair_data_path = data.path(pair_data_path)
         with open(self.json_data_path, "r", encoding="utf-8") as f:
             self._data = self.from_file(json.load(f))
         with open(self.json_localized_path, "r", encoding="utf-8") as ff:
             self._localized_data = json.load(ff)
-        with open(self.json_pair_data_path, "r", encoding="utf-8") as fff:
-            self._pair: Dict[Text, Text] = {}
+        with open(self.json_correction_localized_path, "r", encoding="utf-8") as fff:
+            self._correction_data: Dict[Text, Text] = {}
             for k, v in csv.reader(fff):
+                self._correction_data[k] = str(v)
+        with open(self.json_pair_data_path, "r", encoding="utf-8") as ffff:
+            self._pair: Dict[Text, Text] = {}
+            for k, v in csv.reader(ffff):
                 self._pair[k] = str(v)
         self.combine_events()
 
@@ -101,9 +109,9 @@ class UraraWin:
     def Get_OCRPairing(key: Text):
         if key in UraraWin.instance._pair:
             p = UraraWin.instance._pair[key]
-            if p in UraraWin.instance._dict:
-                return UraraWin.instance._dict[p]
-        return None
+        else:
+            p = key
+        return UraraWin.GetEventFromTranslatedText(p)
 
     @staticmethod
     def GetEventFromTranslatedText(cn: Text):
@@ -133,25 +141,29 @@ class UraraWin:
         
     @staticmethod
     def Reload():
-        UraraWin.instance = UraraWin("UmaMusumeLibrary.json", "UmaMusumeLibrary_zh_CN.json", "UmaMusumeOCRPair.csv")
+        UraraWin.instance = UraraWin("UmaMusumeLibrary.json", "UmaMusumeLibrary_zh_CN.json", "UmaMusumeLibrary_zh_CN_correction.csv", "UmaMusumeOCRPair.csv")
 
     def translated(self, jp: Text)-> Text:
         cn = self._localized_data.get(jp, jp)
         if cn == "":
             cn = jp
+        cn = self._correction_data.get(cn, cn)
         return cn
 
-    def add_translation(self, cn_old: Text, cn_new: Text):
-        e = self._dict[cn_old]
-        jp = e.Name
-        self._localized_data[jp]=cn_new
-        path = self.json_localized_path
+    def add_translation(self, old_text: Text, new_text: Text):
+        if old_text == new_text:
+            return
+        if old_text in self._correction_data:
+            return
+        path = self.json_correction_localized_path
         if not path:
-            raise ValueError("localized file path is empty")
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(json.dumps(self._localized_data))
+            raise ValueError("correction file path is empty")
+        with open(path, "a", encoding="utf-8", newline="") as f:
+            csv.writer(f).writerow((old_text, new_text))
 
     def add_ocr(self, key: Text, value: Text):
+        if key == value:
+            return
         path = self.json_pair_data_path
         if not path:
             raise ValueError("ocr pair save path is empty")
@@ -226,4 +238,4 @@ class UraraWin:
         return o
 
 
-UraraWin.instance = UraraWin("UmaMusumeLibrary.json", "UmaMusumeLibrary_zh_CN.json", "UmaMusumeOCRPair.csv")
+UraraWin.instance = UraraWin("UmaMusumeLibrary.json", "UmaMusumeLibrary_zh_CN.json", "UmaMusumeLibrary_zh_CN_correction.csv", "UmaMusumeOCRPair.csv")

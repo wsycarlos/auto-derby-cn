@@ -132,27 +132,29 @@ def option_tips():
                         for o in e.Options:
                             o_str += UraraWin.Translated(o.Option)
                         app.log.text(("Potential Option: [%s]:[%s] with score of %s")%(c[0], o_str, c[1]))
-                    ans = terminal.prompt("Choose pairing option(1/2/3/4/5):")
+                    ans = terminal.prompt("Choose pairing option\n(1/2/3/4/5):")
                 ret = int(ans) - 1
-                _c = choices[ret]
+                _c = choices[ret][0]
                 _e = UraraWin.GetEventFromTranslatedText(_c)
                 _rewrite = ""
                 while _rewrite not in ["Y", "n"]:
-                    _rewrite = terminal.prompt("Do you want to rewrite translation data?")
+                    _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%_c)
                 if _rewrite == "Y":
-                    _new_c = terminal.prompt("Choose which text to put into translation data(Enter to use [%s]):"%name_text)
+                    _new_c = terminal.prompt("Choose which text to put into translation data(Enter to use [%s]):\n"%name_text)
                     if _new_c == "":
                         _new_c = name_text
                     UraraWin.AddTranslation(_c, _new_c)
                     _c = _new_c
-                for _o in _e.Options:
-                    _old_o = UraraWin.Translated(_o.Option)
-                    app.log.text("Option in list: [%s]"%_old_o)
+                for i in range(len(_e.Options)):
+                    _old_o = UraraWin.Translated(_e.Options[i].Option)
+                    _ocr_o = convert(options_result[i][1], "zh-cn")
                     _rewrite = ""
                     while _rewrite not in ["Y", "n"]:
-                        _rewrite = terminal.prompt("Do you want to rewrite translation data?")
+                        _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%_old_o)
                     if _rewrite == "Y":
-                        _new_o = terminal.prompt("Choose which text to put into translation data")
+                        _new_o = terminal.prompt("Choose which text to put into translation data(Enter to use [%s])\n"%_ocr_o)
+                        if _new_o == "":
+                            _new_o = _ocr_o
                         UraraWin.AddTranslation(_old_o, _new_o)
 
                 found = True
