@@ -3,6 +3,8 @@ import cv2
 
 import numpy as np
 
+import re
+
 import threading
 
 from PIL.Image import Image
@@ -22,6 +24,9 @@ ALL_OPTIONS = [
     templates.SINGLE_MODE_OPTION4,
     templates.SINGLE_MODE_OPTION5,
 ]
+
+skillset = re.compile('『(.*?)』')
+nameset = re.compile('\n(.*)の絆ゲージ')
 
 def stop_for_watching(target_hwnd, window, offset_y):
     while True:
@@ -82,7 +87,9 @@ def prompt_for_options(options_text: Text, choice_list: List[Text]):
 def rewrite_translation(old_text:Text, default_text:Text):
     _rewrite = ""
     while _rewrite not in ["Y", "n"]:
-        _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n)"%old_text)
+        _rewrite = terminal.prompt("Do you want to rewrite translation for [%s]?\n(Y/n/Enter for yes)"%old_text)
+        if _rewrite == "":
+            _rewrite = "Y"
     if _rewrite == "Y":
         _new_text = terminal.prompt("Choose which text to put into translation data(Enter to use [%s]):\n"%default_text)
         if _new_text == "":
@@ -125,6 +132,38 @@ def select_option(options_text:Text, option_choice_list: List[Text]):
     else:
         return option_choice[0]
 
+def layout_padding(x: int, y: int):
+    return [sg.Column([], size=(x, y))]
+
+def layout_text(text: Text, x: int, option_height_y: float, option_offset_x: float):
+    return [sg.Column([], size=(x, option_height_y)), sg.Text(text, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
+
+def pos_y_one_option(image: Text, size_height_ratio:float):
+    _, pos = action.wait_image(image)
+    return (int)((pos[1])*size_height_ratio)
+
+def translate_effect(effect:Text) -> Text:
+    skill_group = skillset.findall(effect)
+    for _sg in skill_group:
+        cn_sg = UraraWin.Translated(_sg)
+        effect = effect.replace(_sg, cn_sg)
+    name_group = nameset.findall(effect)
+    for _ng in name_group:
+        cn_ng = UraraWin.Translated(_ng)
+        effect = effect.replace(_ng, cn_ng)
+    effect = effect.replace("スピード(速度)","速度")
+    effect = effect.replace("賢さ(智力)","智力")
+    effect = effect.replace("根性(毅力)","意志力")
+    effect = effect.replace("パワー(力量)","力量")
+    effect = effect.replace("スタミナ(耐力)","耐力")
+    effect = effect.replace("スキルPt(技能点数)","技能点数")
+    effect = effect.replace("やる気(干劲)","干劲")
+    effect = effect.replace("アップ(提升)","提升")
+    effect = effect.replace("ダウン(下降)","下降")
+    effect = effect.replace("の絆ゲージ","的羁绊")
+    effect = effect.replace("のヒントLv","的灵感Lv")
+    effect = effect.replace("※サポート効果により数値が変動","※数值因支援效应而波动")
+    return effect
 
 def option_tips():
     
@@ -235,51 +274,39 @@ def option_tips():
                 pass
             else:
                 should_create_window = True
-                _, pos1 = action.wait_image(templates.SINGLE_MODE_OPTION1)
-                _, pos2 = action.wait_image(templates.SINGLE_MODE_OPTION2)
                 
-                pos1_y = (int)((pos1[1])*size_height_ratio)
-                pos2_y = (int)((pos2[1])*size_height_ratio)
-
-                option_height_y = (int)(55 * size_height_ratio)
                 option_offset_y = (int)(16 * size_height_ratio)
+                option_height_y = (int)(55 * size_height_ratio)
                 option_offset_x = (int)(19 * size_height_ratio)
+
+                pos1_y = pos_y_one_option(templates.SINGLE_MODE_OPTION1, size_height_ratio)
+                pos2_y = pos_y_one_option(templates.SINGLE_MODE_OPTION2, size_height_ratio)
                 
-                bg_top = [sg.Column([], size=(size_x, pos1_y - option_offset_y))]
-                layout.append(bg_top)
-                bg_1 = [sg.Column([], size=((int)(size_x / 2), option_height_y)), sg.Text(options[0].Effect, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
-                layout.append(bg_1)
-                bg_gap = [sg.Column([], size=(size_x, pos2_y - pos1_y - option_height_y))]
-                layout.append(bg_gap)
-                bg_2 = [sg.Column([], size=((int)(size_x / 2), option_height_y)), sg.Text(options[1].Effect, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
-                layout.append(bg_2)
+                layout.append(layout_padding(size_x, pos1_y - option_offset_y))
+
+                layout.append(layout_text(translate_effect(options[0].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+
+                layout.append(layout_padding(size_x, pos2_y - pos1_y - option_height_y))
+
+                layout.append(layout_text(translate_effect(options[1].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                 if options_length > 2:
-
-                    _, pos3 = action.wait_image(templates.SINGLE_MODE_OPTION3)
-                    pos3_y = (int)((pos3[1])*size_height_ratio)                    
-                    bg_gap = [sg.Column([], size=(size_x, pos3_y - pos2_y - option_height_y))]
-                    layout.append(bg_gap)
-                    bg_3 = [sg.Column([], size=((int)(size_x / 2), option_height_y)), sg.Text(options[2].Effect, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
-                    layout.append(bg_3)
+                    
+                    pos3_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+                    layout.append(layout_padding(size_x, pos3_y - pos2_y - option_height_y))
+                    layout.append(layout_text(translate_effect(options[2].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                     if options_length > 3:
 
-                        _, pos4 = action.wait_image(templates.SINGLE_MODE_OPTION4)
-                        pos4_y = (int)((pos4[1])*size_height_ratio)
-                        bg_gap = [sg.Column([], size=(size_x, pos4_y - pos3_y - option_height_y))]
-                        layout.append(bg_gap)
-                        bg_4 = [sg.Column([], size=((int)(size_x / 2), option_height_y)), sg.Text(options[3].Effect, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
-                        layout.append(bg_4)
+                        pos4_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+                        layout.append(layout_padding(size_x, pos4_y - pos3_y - option_height_y))
+                        layout.append(layout_text(translate_effect(options[3].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                         if options_length > 4:
 
-                            _, pos5 = action.wait_image(templates.SINGLE_MODE_OPTION5)
-                            pos5_y = (int)((pos5[1])*size_height_ratio)
-                            bg_gap = [sg.Column([], size=(size_x, pos5_y - pos4_y - option_height_y))]
-                            layout.append(bg_gap)
-                            bg_5 = [sg.Column([], size=((int)(size_x / 2), option_height_y)), sg.Text(options[4].Effect, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
-                            layout.append(bg_5)
+                            pos5_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+                            layout.append(layout_padding(size_x, pos5_y - pos4_y - option_height_y))
+                            layout.append(layout_text(translate_effect(options[4].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                             if options_length > 5:
                                 terminal.pause("More than 5 options available!")
