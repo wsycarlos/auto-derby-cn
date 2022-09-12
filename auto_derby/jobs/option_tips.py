@@ -27,6 +27,7 @@ ALL_OPTIONS = [
 
 skillset = re.compile('『(.*?)』')
 nameset = re.compile('\n(.*)の絆ゲージ')
+gooutset = re.compile('\n(.*)とお出かけできるようになる')
 
 def stop_for_watching(target_hwnd, window, offset_y):
     while True:
@@ -128,9 +129,9 @@ def get_ocr_result(event_screen: Image):
 def select_option(options_text:Text, option_choice_list: List[Text]):
     option_choice = process.extractOne(options_text, option_choice_list)
     if option_choice[1] < 80:
-        return prompt_for_options(options_text, option_choice_list)
+        return prompt_for_options(options_text, option_choice_list), True
     else:
-        return option_choice[0]
+        return option_choice[0], False
 
 def layout_padding(x: int, y: int):
     return [sg.Column([], size=(x, y))]
@@ -151,6 +152,10 @@ def translate_effect(effect:Text) -> Text:
     for _ng in name_group:
         cn_ng = UraraWin.Translated(_ng)
         effect = effect.replace(_ng, cn_ng)
+    goout_group = gooutset.findall(effect)
+    for _gg in goout_group:
+        cn_gg = UraraWin.Translated(_gg)
+        effect = effect.replace(_gg, cn_gg)
     effect = effect.replace("スピード(速度)","速度")
     effect = effect.replace("賢さ(智力)","智力")
     effect = effect.replace("根性(毅力)","意志力")
@@ -160,9 +165,16 @@ def translate_effect(effect:Text) -> Text:
     effect = effect.replace("やる気(干劲)","干劲")
     effect = effect.replace("アップ(提升)","提升")
     effect = effect.replace("ダウン(下降)","下降")
+    effect = effect.replace("ランダムで(有概率)","有概率")
+    effect = effect.replace("になる","获得")
     effect = effect.replace("の絆ゲージ","的羁绊")
     effect = effect.replace("のヒントLv","的灵感Lv")
+    effect = effect.replace("とお出かけできるようになる","可以一起出行")
+    effect = effect.replace("直前のトレーニングに応じた","根据之前的训练")
+    effect = effect.replace("ステータス(能力)","能力")
+    effect = effect.replace("からランダムに(随机)","随机")
     effect = effect.replace("※サポート効果により数値が変動","※数值因支援效应而波动")
+    effect = effect.replace("バ場状況や出場したレース場に関係するスキルのヒント","相关赛道技能")
     return effect
 
 def option_tips():
@@ -188,7 +200,7 @@ def option_tips():
             name_text += i[1]
 
         for j in options_result:
-            options_text += j[1]
+            options_text += j[1] + ";"
 
         name_text = convert(name_text, "zh-cn")
         options_text = convert(options_text, "zh-cn")
@@ -205,10 +217,19 @@ def option_tips():
             else:
                 _event_text = UraraWin.GetOCRPair(name_text)
                 _o_choice_list = UraraWin.GetOptionChoices(_event_text)
-                _o_choice_text = select_option(options_text, _o_choice_list)
+                _o_choice_text, _need_rewrite = select_option(options_text, _o_choice_list)
                 _o_index = _o_choice_list.index(_o_choice_text)
+
+                _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
+
+                if _need_rewrite:
+                    for i in range(len(_event.Options)):
+                        _old_o = UraraWin.Translated(_event.Options[i].Option)
+                        _ocr_o = convert(options_result[i][1], "zh-cn")
+                        _old_o = rewrite_translation(_old_o, _ocr_o)
+                
                 found = True
-                options = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index].Options
+                options = _event.Options
         else:
 
             _event_choice_text = prompt_for_events(name_text, UraraWin.GetEventsChoices())
@@ -240,10 +261,19 @@ def option_tips():
                 else:
                     _event_text = UraraWin.GetOCRPair(name_text)
                     _o_choice_list = UraraWin.GetOptionChoices(_event_text)
-                    _o_choice_text = select_option(options_text, _o_choice_list)
+                    _o_choice_text, _need_rewrite = select_option(options_text, _o_choice_list)
                     _o_index = _o_choice_list.index(_o_choice_text)
+                    
+                    _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
+                    
+                    if _need_rewrite:
+                        for i in range(len(_event.Options)):
+                            _old_o = UraraWin.Translated(_event.Options[i].Option)
+                            _ocr_o = convert(options_result[i][1], "zh-cn")
+                            _old_o = rewrite_translation(_old_o, _ocr_o)
+                
                     found = True
-                    options = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index].Options
+                    options = _event.Options
 
         if found:
             

@@ -155,7 +155,7 @@ class UraraWin:
             for e in _events:
                 o_str = ""
                 for o in e.Options:
-                    o_str += UraraWin.Translated(o.Option)
+                    o_str += UraraWin.Translated(o.Option) + ";"
                 _optionchoices.append(o_str)
             return _optionchoices
         return None
