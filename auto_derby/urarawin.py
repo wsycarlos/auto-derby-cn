@@ -112,6 +112,7 @@ class UraraWin:
             e1.Options = []
             e2.Options = []
             for o in e.Options:
+                o.Option = self.translated(o.Option)
                 if "夏合宿中：" in o.Option:
                     o1 = UraraOption()
                     o2 = UraraOption()
@@ -146,6 +147,7 @@ class UraraWin:
             e1.Options = []
             e2.Options = []
             for o in e.Options:
+                o.Option = self.translated(o.Option)
                 if "夏合宿中：" in o.Option:
                     o1 = UraraOption()
                     o2 = UraraOption()

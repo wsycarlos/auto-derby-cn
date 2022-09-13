@@ -12,7 +12,7 @@ import PySimpleGUI as sg
 import easyocr
 from zhconv import convert
 
-from .. import action, app, templates, mathtools, terminal, wintools
+from .. import action, app, templates, mathtools, terminal, wintools, template
 from ..urarawin import UraraOption, UraraWin
 from typing import List, Text
 from thefuzz import process
@@ -145,8 +145,8 @@ def layout_padding(x: int, y: int):
 def layout_text(text: Text, x: int, option_height_y: float, option_offset_x: float):
     return [sg.Column([], size=(x, option_height_y)), sg.Text(text, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
 
-def pos_y_one_option(image: Text, size_height_ratio:float):
-    _, pos = action.wait_image(image)
+def pos_y_one_option(event_screen: Image, image: Text, size_height_ratio:float):
+    _, pos = next(template.match(event_screen, image))
     return (int)((pos[1])*size_height_ratio)
 
 def translate_effect(effect:Text) -> Text:
@@ -187,6 +187,8 @@ def translate_effect(effect:Text) -> Text:
     effect = effect.replace("からランダムに(随机)","随机")
     effect = effect.replace("※サポート効果により数値が変動","※数值因支援效应而波动")
     effect = effect.replace("バ場状況や出場したレース場に関係するスキルのヒント","相关赛道技能")
+    effect = effect.replace("シナリオに応じた","相应场景")
+    effect = effect.replace("アオハル","青春杯")
     effect = effect.replace("の","的")
     effect = effect.replace("スピード","速度")
     effect = effect.replace("賢さ","智力")
@@ -267,8 +269,8 @@ def process_window(event_screen: Image, target_window: wintools.WinWindow, optio
         option_height_y = (int)(55 * size_height_ratio)
         option_offset_x = (int)(19 * size_height_ratio)
 
-        pos1_y = pos_y_one_option(templates.SINGLE_MODE_OPTION1, size_height_ratio)
-        pos2_y = pos_y_one_option(templates.SINGLE_MODE_OPTION2, size_height_ratio)
+        pos1_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION1, size_height_ratio)
+        pos2_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION2, size_height_ratio)
         
         layout.append(layout_padding(size_x, pos1_y - option_offset_y))
 
@@ -280,19 +282,19 @@ def process_window(event_screen: Image, target_window: wintools.WinWindow, optio
 
         if options_length > 2:
             
-            pos3_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+            pos3_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
             layout.append(layout_padding(size_x, pos3_y - pos2_y - option_height_y))
             layout.append(layout_text(translate_effect(options[2].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
             if options_length > 3:
 
-                pos4_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+                pos4_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
                 layout.append(layout_padding(size_x, pos4_y - pos3_y - option_height_y))
                 layout.append(layout_text(translate_effect(options[3].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                 if options_length > 4:
 
-                    pos5_y = pos_y_one_option(templates.SINGLE_MODE_OPTION3, size_height_ratio)
+                    pos5_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
                     layout.append(layout_padding(size_x, pos5_y - pos4_y - option_height_y))
                     layout.append(layout_text(translate_effect(options[4].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
