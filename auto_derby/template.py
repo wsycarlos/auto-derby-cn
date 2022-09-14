@@ -178,6 +178,7 @@ def _match_one(
             break
         app.log.text(
             "match: tmpl=%s, pos=%s, similarity=%.2f" % (tmpl, max_loc, max_val)
+            ,level=app.DEBUG
         )
         yield (tmpl, client_pos)
 
@@ -194,7 +195,7 @@ def match(
             match_count += 1
             yield j
     if match_count == 0:
-        app.log.text(f"no match: tmpl={tmpl}")
+        app.log.text(f"no match: tmpl={tmpl}", level=app.DEBUG)
 
 
 # DEPRECATED
