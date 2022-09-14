@@ -149,6 +149,45 @@ namespace NateScarlet.AutoDerby
                 OnPropertyChanged("Plugins");
             }
         }
+
+        public string Force_Races
+        {
+            get
+            {
+                return (string)key.GetValue("Force_Races", "");
+            }
+            set
+            {
+                key.SetValue("Force_Races", value);
+                OnPropertyChanged("Force_Races");
+            }
+        }
+
+        public string Prefered_Races
+        {
+            get
+            {
+                return (string)key.GetValue("Prefered_Races", "");
+            }
+            set
+            {
+                key.SetValue("Prefered_Races", value);
+                OnPropertyChanged("Prefered_Races");
+            }
+        }
+
+        public string Avoid_Races
+        {
+            get
+            {
+                return (string)key.GetValue("Avoid_Races", "");
+            }
+            set
+            {
+                key.SetValue("Avoid_Races", value);
+                OnPropertyChanged("Avoid_Races");
+            }
+        }
         
         public string TargetTrainingValues
         {

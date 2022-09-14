@@ -24,7 +24,13 @@ class Training(single_mode.Training):
 class Race(auto_derby.config.single_mode_race_class):
     def score(self, ctx: single_mode.Context) -> float:
         ret = super().score(ctx)
-        if ctx.target_fan_count > ctx.fan_count:
+        if self.name in single_mode.training.g.force_races:
+            ret += 100
+        elif self.name in single_mode.training.g.prefered_races:
+            ret += 5
+        elif self.name in single_mode.training.g.avoid_races:
+            ret -= 100
+        elif ctx.target_fan_count > ctx.fan_count:
             pass
         elif self.grade in (Race.GRADE_OP, Race.GRADE_PRE_OP):
             ret -= 15

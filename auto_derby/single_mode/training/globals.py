@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Type
+from typing import TYPE_CHECKING, Dict, Type, Text, Tuple
 
 from ...constants import TrainingType
 
@@ -17,6 +17,10 @@ class g:
     partner_class: Type[Partner]
     target_levels: Dict[TrainingType, int] = {}
     target_values: Dict[TrainingType, int] = {}
+    force_races: Tuple[Text, ...]
+    prefered_races: Tuple[Text, ...]
+    avoid_races: Tuple[Text, ...]
+
     traget_distance: str
 
     # deprecated

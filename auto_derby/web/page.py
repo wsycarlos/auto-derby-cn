@@ -22,6 +22,15 @@ def render(
     with open(os.path.join(__dirname__, "dist/index.html"), encoding="utf-8") as f:
         template = f.read()
     return template.replace("<!-- inject data here -->", json.dumps(data))
+    
+
+def render_cn(
+    data: Dict[Text, Any],
+) -> Text:
+    """see ./src/page-data.ts for accepted data format."""
+    with open(os.path.join(__dirname__, "dist/index_cn.html"), encoding="utf-8") as f:
+        template = f.read()
+    return template.replace("<!-- inject data here -->", json.dumps(data, ensure_ascii=False))
 
 
 ASSETS = Route("/assets/", Dir(os.path.join(__dirname__, "dist/assets")))
