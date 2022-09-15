@@ -63,8 +63,9 @@ class UraraWin:
     json_localized_path: Any = None
     json_correction_localized_path: Any = None
     json_pair_data_path = None
-    summer_camp_0 = re.compile(r'(.*)\(夏合宿中：(.*?)\)')
-    summer_camp_1 = re.compile(r'(.*)\(夏合宿中:(.*?)\)')
+    summer_camp_text = ["夏令营中：", "夏季集训中：","夏天集训中：","夏天合宿中：","夏天集训时：","夏季合宿中："]
+    summer_camp_re = [[re.compile(r'(.*)（夏令营中：(.*?)）'), re.compile(r'(.*)（夏令营中：(.*?)\)'), re.compile(r'(.*)夏令营中：(.*?)）')], [re.compile(r'(.*)（夏季集训中：(.*?)）')], [re.compile(r'(.*)（夏天集训中：(.*?)）')], 
+                        [re.compile(r'(.*)（夏天合宿中：(.*?)）')], [re.compile(r'(.*)（夏天集训时：(.*?)）')], [re.compile(r'(.*)（夏季合宿中：(.*?)）')]]
     _dict: Dict[Text, List[UraraEvent]]
     _pair: Dict[Text, Text]
 
@@ -103,6 +104,20 @@ class UraraWin:
                     return True
         return False
 
+    def process_post_translation_text(self, cn: Text):
+        size = len(self.summer_camp_text)
+        for i in range(size):
+            txt = self.summer_camp_text[i]
+            if txt in cn:
+                res = self.summer_camp_re[i]
+                for r in res:
+                    g = r.findall(cn)
+                    if len(g) > 0:
+                        return g[0]
+                print(txt)
+                print(cn)
+        return cn, cn
+
     def pre_process(self, e: UraraEvent):
         if e.Name == "お大事に！":
             e1 = UraraEvent()
@@ -113,31 +128,13 @@ class UraraWin:
             e2.Options = []
             for o in e.Options:
                 o.Option = self.translated(o.Option)
-                if "夏合宿中：" in o.Option:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option, o2.Option = self.summer_camp_0.findall(o.Option)[0]
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
-                elif "夏合宿中:" in o.Option:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option, o2.Option = self.summer_camp_1.findall(o.Option)[0]
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
-                else:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option = o.Option
-                    o2.Option = o.Option
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
+                o1 = UraraOption()
+                o2 = UraraOption()
+                o1.Option, o2.Option = self.process_post_translation_text(o.Option)
+                o1.Effect = o.Effect
+                o2.Effect = o.Effect
+                e1.Options.append(o1)
+                e2.Options.append(o2)
             return e1, e2
         elif e.Name == "無茶は厳禁！":
             e1 = UraraEvent()
@@ -148,31 +145,13 @@ class UraraWin:
             e2.Options = []
             for o in e.Options:
                 o.Option = self.translated(o.Option)
-                if "夏合宿中：" in o.Option:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option, o2.Option = self.summer_camp_0.findall(o.Option)[0]
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
-                elif "夏合宿中:" in o.Option:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option, o2.Option = self.summer_camp_1.findall(o.Option)[0]
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
-                else:
-                    o1 = UraraOption()
-                    o2 = UraraOption()
-                    o1.Option = o.Option
-                    o2.Option = o.Option
-                    o1.Effect = o.Effect
-                    o2.Effect = o.Effect
-                    e1.Options.append(o1)
-                    e2.Options.append(o2)
+                o1 = UraraOption()
+                o2 = UraraOption()
+                o1.Option, o2.Option = self.process_post_translation_text(o.Option)
+                o1.Effect = o.Effect
+                o2.Effect = o.Effect
+                e1.Options.append(o1)
+                e2.Options.append(o2)
             return e1, e2
         elif e.Name in ["レース勝利","レース勝利！","レース勝利！(G1)","レース勝利！(G2)","レース勝利！(1着)","レース勝利！(クラシック10月後半以前1着)","レース勝利！(クラシック11月前半以降1着)","レース勝利！(シニア5月前半以降1着)","レース勝利(G1)","レース勝利(G2)","レース勝利(G3)","レース勝利(OP)"]:
             e.Name = "竞赛获胜"
