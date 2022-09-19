@@ -146,8 +146,11 @@ def layout_text(text: Text, x: int, option_height_y: float, option_offset_x: flo
     return [sg.Column([], size=(x, option_height_y)), sg.Text(text, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
 
 def pos_y_one_option(event_screen: Image, image: Text, size_height_ratio:float):
-    _, pos = next(template.match(event_screen, image))
-    return (int)((pos[1])*size_height_ratio)
+    try:
+        _, pos = next(template.match(event_screen, image))
+        return (int)((pos[1])*size_height_ratio)
+    except StopIteration:
+        return -1
 
 def translate_effect(effect:Text) -> Text:
     effect = effect.replace("「","『")
@@ -270,33 +273,40 @@ def process_window(event_screen: Image, target_window: wintools.WinWindow, optio
         option_offset_x = (int)(19 * size_height_ratio)
 
         pos1_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION1, size_height_ratio)
+
+        if pos1_y >= 0:
+            layout.append(layout_padding(size_x, pos1_y - option_offset_y))
+            layout.append(layout_text(translate_effect(options[0].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+
         pos2_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION2, size_height_ratio)
-        
-        layout.append(layout_padding(size_x, pos1_y - option_offset_y))
 
-        layout.append(layout_text(translate_effect(options[0].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
-
-        layout.append(layout_padding(size_x, pos2_y - pos1_y - option_height_y))
-
-        layout.append(layout_text(translate_effect(options[1].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+        if pos2_y >= 0:
+            layout.append(layout_padding(size_x, pos2_y - pos1_y - option_height_y))
+            layout.append(layout_text(translate_effect(options[1].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
         if options_length > 2:
             
             pos3_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
-            layout.append(layout_padding(size_x, pos3_y - pos2_y - option_height_y))
-            layout.append(layout_text(translate_effect(options[2].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+
+            if pos3_y >= 0:
+                layout.append(layout_padding(size_x, pos3_y - pos2_y - option_height_y))
+                layout.append(layout_text(translate_effect(options[2].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
             if options_length > 3:
 
                 pos4_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
-                layout.append(layout_padding(size_x, pos4_y - pos3_y - option_height_y))
-                layout.append(layout_text(translate_effect(options[3].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+                
+                if pos4_y >= 0:
+                    layout.append(layout_padding(size_x, pos4_y - pos3_y - option_height_y))
+                    layout.append(layout_text(translate_effect(options[3].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                 if options_length > 4:
 
                     pos5_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
-                    layout.append(layout_padding(size_x, pos5_y - pos4_y - option_height_y))
-                    layout.append(layout_text(translate_effect(options[4].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+
+                    if pos5_y >= 0:
+                        layout.append(layout_padding(size_x, pos5_y - pos4_y - option_height_y))
+                        layout.append(layout_text(translate_effect(options[4].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
 
                     if options_length > 5:
                         terminal.pause("More than 5 options available!")
