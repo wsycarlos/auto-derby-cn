@@ -84,6 +84,8 @@ class UraraWin:
         with open(self.json_correction_localized_path, "r", encoding="utf-8") as f3:
             self._correction_data: Dict[Text, Text] = {}
             for k, v in csv.reader(f3):
+                if k in self._correction_data:
+                    raise ValueError("Same text is already existed: %s"%k)
                 self._correction_data[k] = str(v)
         with open(self.json_pair_data_path, "r", encoding="utf-8") as f4:
             self._pair: Dict[Text, Text] = {}
@@ -371,7 +373,7 @@ class UraraWin:
         if old_text == new_text:
             return
         if old_text in self._correction_data:
-            return
+            raise ValueError("same text is already existed: %s"%old_text)
         path = self.json_correction_localized_path
         if not path:
             raise ValueError("correction file path is empty")

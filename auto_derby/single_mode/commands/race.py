@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from typing import Callable, Optional, Text
 
+import time
+
 from ... import action, templates, terminal, app
 from ...scenes import PaddockScene
 from ...scenes.single_mode import RaceMenuScene
@@ -67,14 +69,17 @@ def _handle_race_result(ctx: Context, race: Race):
                 )
             if tmpl.name == templates.CLOSE_BUTTON:
                 order_img = app.device.screenshot()
+                time.sleep(1)
                 res.order = 1
                 app.device.tap(action.template_rect(tmpl, pos))
                 break
             elif tmpl.name == templates.GREEN_NEXT_BUTTON:
                 order_img = app.device.screenshot()
+                time.sleep(1)
                 res.order = 10
                 break
             else:
+                time.sleep(1)
                 app.device.tap(action.template_rect(tmpl, pos))
     else:
         app.device.tap(action.template_rect(tmpl, pos))
