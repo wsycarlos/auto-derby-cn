@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Text
 
 import json
 import csv
-import re
 
 from . import data
 
@@ -22,6 +21,19 @@ class UraraEvent:
 
     def __str__(self) -> str:
         return "[%s]:%s"%(self.Name, self.Options)
+
+    @staticmethod
+    def special_event(name_text: Text, effect1_text: Text, effect2_text: Text) -> UraraEvent:
+        e = UraraEvent()
+        e.Name = name_text
+        e.Options = []
+        e1 = UraraOption()
+        e1.Effect = effect1_text
+        e.Options.append(e1)
+        e2 = UraraOption()
+        e2.Effect = effect2_text
+        e.Options.append(e2)
+        return e
 
 class UraraCharactor:
     Event: List[UraraEvent]
@@ -63,11 +75,25 @@ class UraraWin:
     json_localized_path: Any = None
     json_correction_localized_path: Any = None
     json_pair_data_path = None
-    summer_camp_text = ["夏令营中：", "夏季集训中：","夏天集训中：","夏天合宿中：","夏天集训时：","夏季合宿中："]
-    summer_camp_re = [[re.compile(r'(.*)（夏令营中：(.*?)）'), re.compile(r'(.*)（夏令营中：(.*?)\)'), re.compile(r'(.*)夏令营中：(.*?)）')], [re.compile(r'(.*)（夏季集训中：(.*?)）')], [re.compile(r'(.*)（夏天集训中：(.*?)）')], 
-                        [re.compile(r'(.*)（夏天合宿中：(.*?)）')], [re.compile(r'(.*)（夏天集训时：(.*?)）')], [re.compile(r'(.*)（夏季合宿中：(.*?)）')]]
     _dict: Dict[Text, List[UraraEvent]]
     _pair: Dict[Text, Text]
+
+    special_shared_events = [["お大事に！"],["無茶は厳禁！"],
+    ["レース勝利","レース勝利！","レース勝利！(G1)","レース勝利！(G2)","レース勝利！(1着)","レース勝利！(クラシック10月後半以前1着)","レース勝利！(クラシック11月前半以降1着)","レース勝利！(シニア5月前半以降1着)","レース勝利(G1)","レース勝利(G2)","レース勝利(G3)","レース勝利(OP)"],
+    ["レース入着","レース入着(G2)","レース入着(2~5着)","レース入着(2/4/5着)","レース入着(クラシック10月後半以前2~5着)","レース入着(クラシック11月前半以降2~5着)","レース入着(シニア5月前半以降2~5着)"],
+    ["レース敗北","レース敗北(6着以下)","レース敗北(クラシック10月後半以前6着以下)","レース敗北(クラシック11月前半以降6着以下)","レース敗北(シニア5月前半以降6着以下)"],
+    ["夏合宿（2年目）にて","夏合宿(2年目)にて"],["夏合宿（2年目）終了","夏合宿(2年目)終了"],["夏合宿（3年目）終了","夏合宿(3年目)終了"]]
+
+    special_shared_events_combined = ["请保重！","严禁乱来！","竞赛获胜","竞赛上榜","竞赛败北","夏季集训第二年|途中","夏季集训（第二年）结束","夏季集训（第三年）结束"]
+
+    special_shared_events_dict = {
+                                    "请保重！": UraraEvent.special_event("请保重！","干劲下降\n之前训练的能力-5\n有概率获得『不擅练习』","干劲下降\n之前训练的能力-10\n有概率获得『不擅练习』或者\n『擅长练习○』"),
+                                    "严禁乱来！":UraraEvent.special_event("严禁乱来！","体力+10\n干劲3段下降\n之前训练的能力-10\n5种其他能力随机2种-10\n有概率获得『不擅练习』","干劲3段下降\n之前训练的能力-10\n5种其他能力随机2种-10\n『不擅练习』获得\n体力+10\n『擅长练习○』获得"),
+                                    "竞赛获胜":UraraEvent.special_event("竞赛获胜","能力随机1种+5(op),+8(G2~G3),+10(G1)\n技能Pt+30(op),+35(G2~G3),+45(G1)\n体力-15\n有概率『场地相关技能』取得","能力随机1种+5(op),+8(G2~G3),+10(G1)\n技能Pt+30(op),+35(G2~G3),+45(G1)\n体力-5~-30\n有概率『场地相关技能』取得"),
+                                    "竞赛上榜":UraraEvent.special_event("竞赛上榜","能力随机1种+2~4(op),+4~6(G2~G3),+5~8(G1)\n技能Pt+20~45(op),+30~45(G2~G3),+40~45(G1)\n体力-20n有概率『场地相关技能』取得","能力随机1种+2~4(op),+4~6(G2~G3),+5~8(G1)\n技能Pt+20~45(op),+30~45(G2~G3),+40~45(G1)\n体力-10~-30\n有概率『场地相关技能』取得"),
+                                    "竞赛败北":UraraEvent.special_event("竞赛败北","能力随机1种+3(G2~G3),+4(G1)\n技能Pt+10(op),+20(G2~G3),+25(G1)\n体力-25n有概率『场地相关技能』取得","能力随机1种+3(G2~G3),+4(G1)\n技能Pt+10(op),+20(G2~G3),+25(G1)\n体力-15~-35\n有概率『场地相关技能』取得"),
+                                    "额外的自主训练":UraraEvent.special_event("额外的自主训练","体力-5\n之前的训练项+5\n相应场景NPC的羁绊+5\nURA 秋川理事長\n青春杯 乙名史記者","体力+5"),
+                                }
 
     def __init__(self, path: Text, stories_path: Text, localized_path: Text, correction_path: Text, pair_data_path: Text) -> None:
         self.json_data_path = data.path(path)
@@ -106,192 +132,64 @@ class UraraWin:
                     return True
         return False
 
-    def process_post_translation_text(self, cn: Text):
-        size = len(self.summer_camp_text)
-        for i in range(size):
-            txt = self.summer_camp_text[i]
-            if txt in cn:
-                res = self.summer_camp_re[i]
-                for r in res:
-                    g = r.findall(cn)
-                    if len(g) > 0:
-                        return g[0]
-                print(txt)
-                print(cn)
-        return cn, cn
-
     def pre_process(self, e: UraraEvent):
-        if e.Name == "お大事に！":
-            e1 = UraraEvent()
-            e2 = UraraEvent()
-            e1.Name = e.Name
-            e2.Name = e.Name
-            e1.Options = []
-            e2.Options = []
-            for o in e.Options:
-                o.Option = self.translated(o.Option)
-                o1 = UraraOption()
-                o2 = UraraOption()
-                o1.Option, o2.Option = self.process_post_translation_text(o.Option)
-                o1.Effect = o.Effect
-                o2.Effect = o.Effect
-                e1.Options.append(o1)
-                e2.Options.append(o2)
-            return e1, e2
-        elif e.Name == "無茶は厳禁！":
-            e1 = UraraEvent()
-            e2 = UraraEvent()
-            e1.Name = e.Name
-            e2.Name = e.Name
-            e1.Options = []
-            e2.Options = []
-            for o in e.Options:
-                o.Option = self.translated(o.Option)
-                o1 = UraraOption()
-                o2 = UraraOption()
-                o1.Option, o2.Option = self.process_post_translation_text(o.Option)
-                o1.Effect = o.Effect
-                o2.Effect = o.Effect
-                e1.Options.append(o1)
-                e2.Options.append(o2)
-            return e1, e2
-        elif e.Name in ["レース勝利","レース勝利！","レース勝利！(G1)","レース勝利！(G2)","レース勝利！(1着)","レース勝利！(クラシック10月後半以前1着)","レース勝利！(クラシック11月前半以降1着)","レース勝利！(シニア5月前半以降1着)","レース勝利(G1)","レース勝利(G2)","レース勝利(G3)","レース勝利(OP)"]:
-            e.Name = "竞赛获胜"
-        elif e.Name in ["レース入着","レース入着(G2)","レース入着(2~5着)","レース入着(2/4/5着)","レース入着(クラシック10月後半以前2~5着)","レース入着(クラシック11月前半以降2~5着)","レース入着(シニア5月前半以降2~5着)"]:
-            e.Name = "竞赛上榜"
-        elif e.Name in ["レース敗北","レース敗北(6着以下)","レース敗北(クラシック10月後半以前6着以下)","レース敗北(クラシック11月前半以降6着以下)","レース敗北(シニア5月前半以降6着以下)"]:
-            e.Name = "竞赛败北"
-        elif e.Name in ["夏合宿（2年目）にて","夏合宿(2年目)にて"]:
-            e.Name = "夏季集训第二年|途中"
-        elif e.Name in ["夏合宿（2年目）終了","夏合宿(2年目)終了"]:
-            e.Name = "夏季集训（第二年）结束"
-        elif e.Name in ["夏合宿（3年目）終了","夏合宿(3年目)終了"]:
-            e.Name = "夏季集训（第三年）结束"
-        return e, None
+        for i in range(len(self.special_shared_events)):
+            _se = self.special_shared_events[i]
+            if e.Name in _se:
+                e.Name = self.special_shared_events_combined[i]
+        return e
 
     def combine_events(self):
         self._dict: Dict[Text, List[UraraEvent]] = {}
         for c1 in self._data.Charactor.three_star.values():
             for e in c1.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
         for c2 in self._data.Charactor.two_star.values():
             for e in c2.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
         for c3 in self._data.Charactor.one_star.values():
             for e in c3.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
 
         for s1 in self._data.Support.SSR.values():
             for e in s1.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
         for s2 in self._data.Support.SR.values():
             for e in s2.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
         for s3 in self._data.Support.R.values():
             for e in s3.Event:
-                e1, e2 = self.pre_process(e)
-                if e2 == None:
-                    cn = self.translated(e1.Name)
-                    if cn not in self._dict:
-                        self._dict[cn] = []
-                    if not self.has_event(self._dict[cn], e1):
-                        self._dict[cn].append(e1)
-                else:
-                    cn1 = self.translated(e1.Name)
-                    cn2 = self.translated(e2.Name)
-                    if cn1 not in self._dict:
-                        self._dict[cn1] = []
-                    if cn2 not in self._dict:
-                        self._dict[cn2] = []
-                    if not self.has_event(self._dict[cn1], e1):
-                        self._dict[cn1].append(e1)
-                    if not self.has_event(self._dict[cn2], e2):
-                        self._dict[cn1].append(e2)
+                e = self.pre_process(e)
+                cn = self.translated(e.Name)
+                if cn not in self._dict:
+                    self._dict[cn] = []
+                if not self.has_event(self._dict[cn], e):
+                    self._dict[cn].append(e)
         
         for e in self._stories.URA.Event:
             cn = self.translated(e.Name)

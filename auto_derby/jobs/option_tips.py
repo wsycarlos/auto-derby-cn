@@ -324,19 +324,22 @@ def find_event_options(name_text: Text, options_text: Text, options_result):
             options = ocr_pairing[0].Options
         else:
             _event_text = UraraWin.GetOCRPair(name_text)
-            _o_choice_list = UraraWin.GetOptionChoices(_event_text)
-            _o_choice_text, _need_reload, _need_rewrite = select_option(options_text, _o_choice_list)
-            if _need_reload:
-                return False, None
-            _o_index = _o_choice_list.index(_o_choice_text)
+            if _event_text in UraraWin.special_shared_events_dict.keys():
+                _event = UraraWin.special_shared_events_dict[_event_text]
+            else:
+                _o_choice_list = UraraWin.GetOptionChoices(_event_text)
+                _o_choice_text, _need_reload, _need_rewrite = select_option(options_text, _o_choice_list)
+                if _need_reload:
+                    return False, None
+                _o_index = _o_choice_list.index(_o_choice_text)
 
-            _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
+                _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
 
-            if _need_rewrite:
-                for i in range(len(_event.Options)):
-                    _old_o = UraraWin.Translated(_event.Options[i].Option)
-                    _ocr_o = convert(options_result[i][1], "zh-cn")
-                    _old_o = rewrite_translation(_old_o, _ocr_o)
+                if _need_rewrite:
+                    for i in range(len(_event.Options)):
+                        _old_o = UraraWin.Translated(_event.Options[i].Option)
+                        _ocr_o = convert(options_result[i][1], "zh-cn")
+                        _old_o = rewrite_translation(_old_o, _ocr_o)
             
             found = True
             options = _event.Options
@@ -347,22 +350,25 @@ def find_event_options(name_text: Text, options_text: Text, options_result):
         if _need_reload:
             return False, None
 
-        _o_choice_list = UraraWin.GetOptionChoices(_event_choice_text)
+        if _event_choice_text in UraraWin.special_shared_events_dict.keys():
+            _event = UraraWin.special_shared_events_dict[_event_choice_text]
+        else:
+            _o_choice_list = UraraWin.GetOptionChoices(_event_choice_text)
 
-        _o_choice_text, _need_reload = prompt_for_options(options_text, _o_choice_list)
+            _o_choice_text, _need_reload = prompt_for_options(options_text, _o_choice_list)
 
-        if _need_reload:
-            return False, None
-        
-        _o_index = _o_choice_list.index(_o_choice_text)
-        _event = UraraWin.GetEventFromTranslatedText(_event_choice_text)[_o_index]
+            if _need_reload:
+                return False, None
 
-        _event_choice_text = rewrite_translation(_event_choice_text, name_text)
-        
-        for i in range(len(_event.Options)):
-            _old_o = UraraWin.Translated(_event.Options[i].Option)
-            _ocr_o = convert(options_result[i][1], "zh-cn")
-            _old_o = rewrite_translation(_old_o, _ocr_o)
+            _o_index = _o_choice_list.index(_o_choice_text)
+            _event = UraraWin.GetEventFromTranslatedText(_event_choice_text)[_o_index]
+
+            _event_choice_text = rewrite_translation(_event_choice_text, name_text)
+
+            for i in range(len(_event.Options)):
+                _old_o = UraraWin.Translated(_event.Options[i].Option)
+                _ocr_o = convert(options_result[i][1], "zh-cn")
+                _old_o = rewrite_translation(_old_o, _ocr_o)
 
         found = True
         UraraWin.AddOCRPairing(name_text, _event_choice_text)
@@ -376,20 +382,23 @@ def find_event_options(name_text: Text, options_text: Text, options_result):
                 options = ocr_pairing[0].Options
             else:
                 _event_text = UraraWin.GetOCRPair(name_text)
-                _o_choice_list = UraraWin.GetOptionChoices(_event_text)
-                _o_choice_text, _need_reload, _need_rewrite = select_option(options_text, _o_choice_list)
-                if _need_reload:
-                    return False, None
-                _o_index = _o_choice_list.index(_o_choice_text)
+                if _event_text in UraraWin.special_shared_events_dict.keys():
+                    _event = UraraWin.special_shared_events_dict[_event_text]
+                else:
+                    _o_choice_list = UraraWin.GetOptionChoices(_event_text)
+                    _o_choice_text, _need_reload, _need_rewrite = select_option(options_text, _o_choice_list)
+                    if _need_reload:
+                        return False, None
+                    _o_index = _o_choice_list.index(_o_choice_text)
+                    
+                    _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
+                    
+                    if _need_rewrite:
+                        for i in range(len(_event.Options)):
+                            _old_o = UraraWin.Translated(_event.Options[i].Option)
+                            _ocr_o = convert(options_result[i][1], "zh-cn")
+                            _old_o = rewrite_translation(_old_o, _ocr_o)
                 
-                _event = UraraWin.GetEventFromTranslatedText(_event_text)[_o_index]
-                
-                if _need_rewrite:
-                    for i in range(len(_event.Options)):
-                        _old_o = UraraWin.Translated(_event.Options[i].Option)
-                        _ocr_o = convert(options_result[i][1], "zh-cn")
-                        _old_o = rewrite_translation(_old_o, _ocr_o)
-            
                 found = True
                 options = _event.Options
 
