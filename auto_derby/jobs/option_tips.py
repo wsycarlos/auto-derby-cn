@@ -410,10 +410,7 @@ def option_tips():
 
     while True:
 
-        tmpl, _ = action.wait_image(templates.SINGLE_MODE_OPTION1, templates.SINGLE_MODE_FINISH_BUTTON)
-        
-        if tmpl.name == templates.SINGLE_MODE_FINISH_BUTTON:
-            break
+        action.wait_image(templates.SINGLE_MODE_OPTION1)
         
         time.sleep(0.2)  # wait animation
         

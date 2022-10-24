@@ -100,7 +100,7 @@ class config:
     )
     ocr_data_path = os.getenv("AUTO_DERBY_OCR_LABEL_PATH", "data/ocr_labels.csv")
     ocr_image_path = os.getenv("AUTO_DERBY_OCR_IMAGE_PATH", "")
-    web_log_disabled = os.getenv("AUTO_DERBY_WEB_LOG_DISABLED", "").lower() == "true"
+    web_log_disabled = os.getenv("AUTO_DERBY_WEB_LOG_DISABLED", "").lower() != "false"
     web_log_buffer_path = os.getenv(
         "AUTO_DERBY_WEB_LOG_BUFFER_PATH",
         WebLogService.default_buffer_path,
