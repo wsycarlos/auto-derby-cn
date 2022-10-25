@@ -35,34 +35,51 @@ namespace NateScarlet.AutoDerby
         }
     }
 
-    public class DistanceOptions : ObservableCollection<Option>
+    public class ConfigOptions : ObservableCollection<Option>
     {
-        public DistanceOptions()
+        public ConfigOptions()
         {
             Add(new Option()
             {
-                Label = "Short",
-                Value = "short",
+                Label = "Preset",
+                Value = "preset",
             });
             Add(new Option()
             {
-                Label = "Miles",
-                Value = "miles",
+                Label = "ValueCustom",
+                Value = "value",
             });
             Add(new Option()
             {
-                Label = "Medium",
-                Value = "medium",
+                Label = "RaceCustom",
+                Value = "race",
             });
             Add(new Option()
             {
-                Label = "Long",
-                Value = "long",
-            });
-            Add(new Option()
-            {
-                Label = "Custom",
+                Label = "AllCustom",
                 Value = "custom",
+            });
+        }
+    }
+
+    public class PresetOptions : ObservableCollection<Option>
+    {
+        public PresetOptions()
+        {
+            Add(new Option()
+            {
+                Label = "\u4f18\u79c0\u7d20\u8d28",
+                Value = "Nice_Nature",
+            });
+            Add(new Option()
+            {
+                Label = "\u5927\u548c\u8d64\u9aa5",
+                Value = "Daiwa_Scarlet",
+            });
+            Add(new Option()
+            {
+                Label = "\u7279\u522b\u5468",
+                Value = "Special_Week",
             });
         }
     }
@@ -89,7 +106,8 @@ namespace NateScarlet.AutoDerby
             }
 
             this.JobOptions1 = new JobOptions();
-            this.DistanceOptions1 = new DistanceOptions();
+            this.ConfigOptions1 = new ConfigOptions();
+            this.PresetOptions1 = new PresetOptions();
         }
         ~DataContext()
         {
@@ -259,20 +277,37 @@ namespace NateScarlet.AutoDerby
         { get; set; }
 
 
-        public string Distance
+        public string Config
         {
             get
             {
-                return (string)key.GetValue("Distance", "short");
+                return (string)key.GetValue("Config", "preset");
             }
             set
             {
-                key.SetValue("Distance", value);
-                OnPropertyChanged("Distance");
+                key.SetValue("Config", value);
+                OnPropertyChanged("Config");
             }
         }
 
-        public DistanceOptions DistanceOptions1
+        public ConfigOptions ConfigOptions1
+        { get; set; }
+
+
+        public string Preset
+        {
+            get
+            {
+                return (string)key.GetValue("Preset", "\u4f18\u79c0\u7d20\u8d28");
+            }
+            set
+            {
+                key.SetValue("Preset", value);
+                OnPropertyChanged("Preset");
+            }
+        }
+
+        public PresetOptions PresetOptions1
         { get; set; }
     }
 }

@@ -15,7 +15,7 @@ import webbrowser
 import win32con
 import win32gui
 
-from . import __version__, app, clients, config, jobs, plugin, templates, version
+from . import __version__, app, clients, config, jobs, plugin, preset, templates, version
 from .infrastructure.client_device_service import ClientDeviceService
 from .infrastructure.logging_log_service import LoggingLogService
 from .infrastructure.multi_log_service import MultiLogService
@@ -45,6 +45,13 @@ def main():
         nargs="+",
         default=config.PLUGINS,
         help="plugin names to enable",
+    )
+    parser.add_argument(
+        "-ps",
+        "--preset",
+        nargs="+",
+        default=config.PRESET,
+        help="preset name to enable",
     )
     parser.add_argument(
         "--force_races",
@@ -103,10 +110,12 @@ def main():
             return c
 
     plugin.reload()
+    preset.reload()
     config.client = _client
     plugins = args.plugin
     for i in plugins:
         plugin.install(i)
+    preset.set_current(args.preset)
     config.apply()
 
     with app.cleanup as cleanup:

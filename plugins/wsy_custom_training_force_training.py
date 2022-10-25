@@ -1,5 +1,5 @@
 import auto_derby
-from auto_derby import single_mode, mathtools
+from auto_derby import single_mode, mathtools, preset
 from auto_derby.single_mode import training
 from auto_derby.single_mode.training import wsy_training_score
 
@@ -25,14 +25,17 @@ class Training(single_mode.Training):
 class Race(auto_derby.config.single_mode_race_class):
     def score(self, ctx: single_mode.Context) -> float:
         ret = super().score(ctx)
-        if self.name in single_mode.training.g.force_races:
-            ret += 100
-        elif self.name in single_mode.training.g.prefered_races:
-            ret += 5
-        elif self.name in single_mode.training.g.avoid_races:
-            ret -= 100
-        elif ctx.target_fan_count <= ctx.fan_count:
-            ret -= 100
+        if single_mode.training.g.target_config == "custom" or single_mode.training.g.target_config == "race":
+            if self.name in single_mode.training.g.force_races:
+                ret += 100
+            elif self.name in single_mode.training.g.prefered_races:
+                ret += 5
+            elif self.name in single_mode.training.g.avoid_races:
+                ret -= 100
+            elif ctx.target_fan_count <= ctx.fan_count:
+                ret -= 100
+        else:
+            ret = preset.get_current().score(ret, self.name, ctx)
         return ret
 
 class Plugin(auto_derby.Plugin):

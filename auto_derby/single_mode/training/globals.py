@@ -21,7 +21,7 @@ class g:
     prefered_races: Tuple[Text, ...]
     avoid_races: Tuple[Text, ...]
 
-    traget_distance: str
+    target_config: str
 
     # deprecated
     image_path: str = ""  # replaced by web log

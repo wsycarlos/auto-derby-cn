@@ -1,11 +1,12 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   Title="Auto Derby Launcher"
-  Height="800"
+  Height="880"
   Width="500"
   Topmost="True">
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
@@ -67,15 +68,24 @@
     </StackPanel>
 
     <StackPanel Grid.Row="4">
-      <Label>Distance</Label>
+      <Label>Config</Label>
       <ComboBox x:Name="comboBox2"
-        ItemsSource="{Binding DistanceOptions1, UpdateSourceTrigger=PropertyChanged}"
+        ItemsSource="{Binding ConfigOptions1, UpdateSourceTrigger=PropertyChanged}"
         SelectedValuePath="Value"
         DisplayMemberPath="Label"
-        SelectedValue="{Binding Distance}" />
+        SelectedValue="{Binding Config}" />
     </StackPanel>
 
     <StackPanel Grid.Row="5">
+      <Label>Preset</Label>
+      <ComboBox x:Name="comboBox3"
+        ItemsSource="{Binding PresetOptions1, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding Preset}" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="6">
       <Label>
         <TextBlock>
           Target training values (seperated by comma, omit value for default)
@@ -87,13 +97,13 @@
         MaxLines="1" />
     </StackPanel>
 
-    <StackPanel Grid.Row="6">
+    <StackPanel Grid.Row="7">
       <Label>Pause if race order greater than</Label>
       <TextBox Text="{Binding PauseIfRaceOrderGt, UpdateSourceTrigger=PropertyChanged}"
         MaxLines="1" />
     </StackPanel>
 
-    <StackPanel Grid.Row="7">
+    <StackPanel Grid.Row="8">
       <Label>Plugins seperated by comma</Label>
       <Grid>
         <Grid.ColumnDefinitions>
@@ -107,7 +117,7 @@
       </Grid>
     </StackPanel>
 
-    <StackPanel Grid.Row="8">
+    <StackPanel Grid.Row="9">
       <Label>Races Force to Play seperated by comma</Label>
       <Grid>
         <Grid.ColumnDefinitions>
@@ -121,7 +131,7 @@
       </Grid>
     </StackPanel>
 
-    <StackPanel Grid.Row="9">
+    <StackPanel Grid.Row="10">
       <Label>Races Prefered to Play seperated by comma</Label>
       <Grid>
         <Grid.ColumnDefinitions>
@@ -135,7 +145,7 @@
       </Grid>
     </StackPanel>
 
-    <StackPanel Grid.Row="10">
+    <StackPanel Grid.Row="11">
       <Label>Races Avoid to Play seperated by comma</Label>
       <Grid>
         <Grid.ColumnDefinitions>
@@ -150,9 +160,9 @@
     </StackPanel>
 
     <Button x:Name="startButton"
-      Grid.Row="11">Start</Button>
+      Grid.Row="12">Start</Button>
 
-    <StackPanel Grid.Row="12"
+    <StackPanel Grid.Row="13"
       Margin="8"
       Orientation="Horizontal"
       HorizontalAlignment="Right">

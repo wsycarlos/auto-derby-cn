@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from ... import mathtools
+from ... import preset
 from .globals import g
 from typing import TYPE_CHECKING
 
@@ -41,15 +42,21 @@ def compute(ctx: Context, trn: Training) -> float:
     pow_ = 0
     gut = 0
     wis = 0
+    
+    preset_speed = preset.get_current().value().get(trn.TYPE_SPEED, -1)
+    preset_stamina = preset.get_current().value().get(trn.TYPE_STAMINA, -1)
+    preset_power = preset.get_current().value().get(trn.TYPE_POWER, -1)
+    preset_gut = preset.get_current().value().get(trn.TYPE_GUTS, -1)
+    preset_wisdom = preset.get_current().value().get(trn.TYPE_WISDOM, -1)
 
-    if g.traget_distance == "custom":
+    if g.target_config == "custom" or g.target_config == "value":
         target_speed = g.target_values.get(trn.TYPE_SPEED, -1)
         if target_speed > 0:
             spd = compute_target_value(ctx.speed, trn.speed, target_speed)
         elif target_speed == 0:
             spd = 0
         else:
-            spd = compute_default_spd(ctx, trn, t_now)
+            spd = compute_target_value(ctx.speed, trn.speed, preset_speed)
             
         target_stamina = g.target_values.get(trn.TYPE_STAMINA, -1)
         if target_stamina > 0:
@@ -57,7 +64,7 @@ def compute(ctx: Context, trn: Training) -> float:
         elif target_stamina == 0:
             sta = 0
         else:
-            sta = compute_default_sta(ctx, trn, t_now)
+            sta = compute_target_value(ctx.stamina, trn.stamina, preset_stamina)
         
         target_power = g.target_values.get(trn.TYPE_POWER, -1)
         if target_power > 0:
@@ -65,7 +72,7 @@ def compute(ctx: Context, trn: Training) -> float:
         elif target_power == 0:
             pow_ = 0
         else:
-            pow_ = compute_default_pow(ctx, trn, t_now)
+            pow_ = compute_target_value(ctx.power, trn.power, preset_power)
         
         target_gut = g.target_values.get(trn.TYPE_GUTS, -1)
         if target_gut > 0:
@@ -73,7 +80,7 @@ def compute(ctx: Context, trn: Training) -> float:
         elif target_gut == 0:
             gut = 0
         else:
-            gut = compute_default_gut(ctx, trn, t_now)
+            gut = compute_target_value(ctx.guts, trn.guts, preset_gut)
         
         target_wisdom = g.target_values.get(trn.TYPE_WISDOM, -1)
         if target_wisdom > 0:
@@ -81,13 +88,13 @@ def compute(ctx: Context, trn: Training) -> float:
         elif target_wisdom == 0:
             wis = 0
         else:
-            wis = compute_default_wis(ctx, trn, t_now)
+            wis = compute_target_value(ctx.wisdom, trn.wisdom, preset_wisdom)
     else:
-        spd = compute_default_spd(ctx, trn, t_now)
-        sta = compute_default_sta(ctx, trn, t_now)
-        pow_ = compute_default_pow(ctx, trn, t_now)
-        gut = compute_default_gut(ctx, trn, t_now)
-        wis = compute_default_wis(ctx, trn, t_now)
+        spd = compute_target_value(ctx.speed, trn.speed, preset_speed)
+        sta = compute_target_value(ctx.stamina, trn.stamina, preset_stamina)
+        pow_ = compute_target_value(ctx.power, trn.power, preset_power)
+        gut = compute_target_value(ctx.guts, trn.guts, preset_gut)
+        wis = compute_target_value(ctx.wisdom, trn.wisdom, preset_wisdom)
 
 
     skill = compute_skill(ctx, trn, t_now)
@@ -114,103 +121,6 @@ def compute_target_value(ctx_value:int, trn_value:int, target_value: int) -> flo
     )
 
     return val
-
-    
-def compute_default_spd(ctx: Context, trn: Training, t_now: int) -> float:
-    
-    spd = mathtools.integrate(
-        ctx.speed,
-        trn.speed,
-        default_speed_matrix,
-    )
-    if ctx.speed < t_now / 24 * 300:
-        spd *= 1.5
-    return spd
-    
-def compute_default_sta(ctx: Context, trn: Training, t_now: int) -> float:
-    
-    sta = 0
-
-    if g.traget_distance == "short":
-        sta = mathtools.integrate(
-            ctx.stamina,
-            trn.stamina,
-            default_short_stamina_matrix,
-        )
-    elif g.traget_distance == "miles":
-        sta = mathtools.integrate(
-            ctx.stamina,
-            trn.stamina,
-            default_miles_stamina_matrix,
-        )
-    elif g.traget_distance == "medium":
-        sta = mathtools.integrate(
-            ctx.stamina,
-            trn.stamina,
-            default_medium_stamina_matrix,
-        )
-    elif g.traget_distance == "long":
-        sta = mathtools.integrate(
-            ctx.stamina,
-            trn.stamina,
-            default_long_stamina_matrix,
-        )
-    
-    return sta
-    
-def compute_default_pow(ctx: Context, trn: Training, t_now: int) -> float:
-
-    pow = mathtools.integrate(
-        ctx.power,
-        trn.power,
-        (
-            (0, 1.0),
-            (300, 0.2 + ctx.speed / 600),
-            (600, 0.1 + ctx.speed / 900),
-            (900, ctx.speed / 900 / 3),
-            (1120, 0.1),
-        ),
-    )
-    return pow
-    
-def compute_default_gut(ctx: Context, trn: Training, t_now: int) -> float:
-    
-    gut = mathtools.integrate(
-        ctx.guts,
-        trn.guts,
-        (
-            (0, 2.0),
-            (300, 1.0),
-            (400, 0.3),
-            (600, 0.1),
-        )
-        if ctx.speed > 400 / 24 * t_now
-        else
-        (
-            (0, 2.0),
-            (300, 0.5),
-            (400, 0.1)
-        ),
-    )
-    return gut
-    
-def compute_default_wis(ctx: Context, trn: Training, t_now: int) -> float:
-    
-    wis = mathtools.integrate(
-        ctx.wisdom,
-        trn.wisdom,
-        (
-            (0, 2.0),
-            (300, 0.8),
-            (600, 0.5),
-            (900, 0.3),
-            (1120, 0.1),
-        ),
-    )
-    if ctx.wisdom > 300 and ctx.speed < min(1120, 300 / 24 * t_now):
-        wis *= 0.1
-
-    return wis
     
 def compute_vit(ctx: Context, trn: Training, t_now: int) -> float:
     

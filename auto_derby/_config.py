@@ -9,7 +9,7 @@ from typing import Callable, Dict, Text
 from auto_derby.constants import TrainingType
 from auto_derby.infrastructure.web_log_service import WebLogService
 
-from . import ocr, plugin, single_mode, template, terminal, window, data
+from . import ocr, plugin, preset, single_mode, template, terminal, window, data
 from .clients import ADBClient, Client
 from .single_mode import commands as sc
 from .single_mode.training import Training
@@ -82,6 +82,7 @@ def _default_client() -> Client:
 class config:
     LOG_PATH = os.getenv("AUTO_DERBY_LOG_PATH", "auto_derby.log")
     PLUGINS = tuple(i for i in os.getenv("AUTO_DERBY_PLUGINS", "").split(",") if i)
+    PRESET = os.getenv("AUTO_DERBY_PRESET", "")
     ADB_ADDRESS = os.getenv("AUTO_DERBY_ADB_ADDRESS", "")
     CHECK_UPDATE = os.getenv("AUTO_DERBY_CHECK_UPDATE", "").lower() == "true"
 
@@ -129,6 +130,7 @@ class config:
         os.getenv("AUTO_DERBY_SINGLE_MODE_ITEM_PROMPT_DISABLED", "").lower() == "true"
     )
     plugin_path = os.getenv("AUTO_DERBY_PLUGIN_PATH", "plugins")
+    preset_path = os.getenv("AUTO_DERBY_PRESET_PATH", "presets")
     single_mode_race_class = single_mode.Race
     single_mode_training_class = single_mode.Training
     single_mode_training_partner_class = single_mode.training.Partner
@@ -150,7 +152,7 @@ class config:
     single_mode_target_training_values = _parse_training_values(
         os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES", "")
     )
-    single_mode_target_distance = os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_DISTANCE", "short")
+    single_mode_target_config = os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_CONFIG", "preset")
 
     single_mode_training_force_races = tuple(i for i in os.getenv("AUTO_DERBY_SINGLE_MODE_FORCE_RACES", "").split(",") if i)
     single_mode_training_prefered_races = tuple(i for i in os.getenv("AUTO_DERBY_SINGLE_MODE_PREFERED_RACES", "").split(",") if i)
@@ -193,6 +195,7 @@ class config:
         ocr.g.image_path = cls.ocr_image_path
         ocr.g.prompt_disabled = cls.ocr_prompt_disabled
         plugin.g.path = cls.plugin_path
+        preset.g.path = cls.preset_path
         single_mode.event.g.data_path = cls.single_mode_choice_path
         single_mode.event.g.event_image_path = cls.single_mode_event_image_path
         single_mode.event.g.prompt_disabled = cls.single_mode_event_prompt_disabled
@@ -206,7 +209,7 @@ class config:
         single_mode.training.g.image_path = cls.single_mode_training_image_path
         single_mode.training.g.target_levels = cls.single_mode_target_training_levels
         single_mode.training.g.target_values = cls.single_mode_target_training_values
-        single_mode.training.g.traget_distance = cls.single_mode_target_distance
+        single_mode.training.g.target_config = cls.single_mode_target_config
         single_mode.training.g.training_class = cls.single_mode_training_class
         single_mode.training.g.partner_class = cls.single_mode_training_partner_class
         single_mode.training.g.force_races = cls.single_mode_training_force_races
