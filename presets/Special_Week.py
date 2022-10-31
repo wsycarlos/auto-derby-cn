@@ -49,7 +49,7 @@ class Preset(auto_derby.Preset):
     
     def value(self) -> Dict[constants.TrainingType, int]:
         return {
-            constants.TrainingType.SPEED:800,
+            constants.TrainingType.SPEED:1000,
             constants.TrainingType.STAMINA:800,
             constants.TrainingType.POWER:800,
             constants.TrainingType.GUTS:300,
