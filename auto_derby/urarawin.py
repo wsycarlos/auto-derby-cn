@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Text
 
 import json
 import csv
+import re
 
 from . import data
 
@@ -255,6 +256,33 @@ class UraraWin:
     @staticmethod
     def AddTranslation(cn_old: Text, cn_new: Text):
         UraraWin.instance.add_translation(cn_old, cn_new)
+
+    @staticmethod
+    def GetAllCharacters()-> List[Text]:
+        results: List[Text] = []
+        name_set = re.compile('\[(.*?)\](.*)')
+        for c1 in UraraWin.instance._data.Charactor.three_star.keys():
+            for _c, _n in name_set.findall(c1):
+                _cn_c = UraraWin.Translated(_c)
+                _cn_n = UraraWin.Translated(_n)
+                c1 = c1.replace(_c, _cn_c)
+                c1 = c1.replace(_n, _cn_n)
+            results.append(c1)
+        for c2 in UraraWin.instance._data.Charactor.two_star.keys():
+            for _c, _n in name_set.findall(c2):
+                _cn_c = UraraWin.Translated(_c)
+                _cn_n = UraraWin.Translated(_n)
+                c2 = c2.replace(_c, _cn_c)
+                c2 = c2.replace(_n, _cn_n)
+            results.append(c2)
+        for c3 in UraraWin.instance._data.Charactor.one_star.keys():
+            for _c, _n in name_set.findall(c3):
+                _cn_c = UraraWin.Translated(_c)
+                _cn_n = UraraWin.Translated(_n)
+                c3 = c3.replace(_c, _cn_c)
+                c3 = c3.replace(_n, _cn_n)
+            results.append(c3)
+        return results
         
     @staticmethod
     def Reload():

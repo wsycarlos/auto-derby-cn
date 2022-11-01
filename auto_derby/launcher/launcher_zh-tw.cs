@@ -1,8 +1,11 @@
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using System.ComponentModel;
+using System.IO;
 
-namespace NateScarlet.AutoDerby
+namespace Wsycarlos.AutoDerby
 {
     public class Option
     {
@@ -62,25 +65,26 @@ namespace NateScarlet.AutoDerby
         }
     }
 
+    public class AutoNuturingOption
+    {
+        public Dictionary<string, int> races;
+    }
+
     public class PresetOptions : ObservableCollection<Option>
     {
-        public PresetOptions()
+        public PresetOptions(string path)
         {
-            Add(new Option()
+            string json_text = File.ReadAllText(path);
+            Dictionary<string, AutoNuturingOption> data = JsonConvert.DeserializeObject<Dictionary<string, AutoNuturingOption>>(json_text);
+            foreach(var k in data.Keys)
             {
-                Label = "\u4f18\u79c0\u7d20\u8d28",
-                Value = "Nice_Nature",
-            });
-            Add(new Option()
-            {
-                Label = "\u5927\u548c\u8d64\u9aa5",
-                Value = "Daiwa_Scarlet",
-            });
-            Add(new Option()
-            {
-                Label = "\u7279\u522b\u5468",
-                Value = "Special_Week",
-            });
+                Add(new Option()
+                {
+                    Label = k,
+                    Value = k,
+                }
+                );
+            }
         }
     }
 
@@ -93,7 +97,7 @@ namespace NateScarlet.AutoDerby
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private const string RegistryPath = @"Software\NateScarlet\auto-derby";
+        private const string RegistryPath = @"Software\wsycarlos\auto-derby";
 
         private RegistryKey key;
 
@@ -107,7 +111,6 @@ namespace NateScarlet.AutoDerby
 
             this.JobOptions1 = new JobOptions();
             this.ConfigOptions1 = new ConfigOptions();
-            this.PresetOptions1 = new PresetOptions();
         }
         ~DataContext()
         {
@@ -298,7 +301,7 @@ namespace NateScarlet.AutoDerby
         {
             get
             {
-                return (string)key.GetValue("Preset", "\u4f18\u79c0\u7d20\u8d28");
+                return (string)key.GetValue("Preset", "");
             }
             set
             {

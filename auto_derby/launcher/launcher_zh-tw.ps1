@@ -23,9 +23,14 @@ Add-Type –AssemblyName PresentationFramework
 
 [System.Windows.Window]$mainWindow = [Windows.Markup.XamlReader]::Load( (New-Object System.Xml.XmlNodeReader ([xml](Get-Content "$PSScriptRoot\launcher_zh-tw.xaml"))) )
 
-Add-Type -Language CSharp ([string](Get-Content "$PSScriptRoot\launcher_zh-tw.cs"))
+$jsonlib = (get-item $PSScriptRoot\Newtonsoft.Json.dll).fullname
+[void][reflection.assembly]::LoadFrom($jsonlib)
 
-$data = New-Object NateScarlet.AutoDerby.DataContext -Property @{
+Add-Type -Language CSharp -ReferencedAssemblies $jsonlib ([string](Get-Content "$PSScriptRoot\launcher_zh-tw.cs"))
+
+$preset = New-Object Wsycarlos.AutoDerby.PresetOptions -ArgumentList @([string][System.IO.Path]::GetFullPath("auto_derby/data/UmaMusumeAutoNuturing.json"))
+
+$data = New-Object Wsycarlos.AutoDerby.DataContext -Property @{
     DefaultSingleModeChoicesDataPath = [System.IO.Path]::GetFullPath("data/single_mode_choices.csv")
     DefaultPythonExecutablePath      = . {
         try {
@@ -35,6 +40,7 @@ $data = New-Object NateScarlet.AutoDerby.DataContext -Property @{
             
         }
     }
+    PresetOptions1 = $preset
 }
 $mainWindow.DataContext = $data
 
