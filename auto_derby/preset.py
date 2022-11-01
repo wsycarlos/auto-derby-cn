@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 
 from .constants import TrainingType
 from .single_mode import Context, Race
+from .single_mode.race import RaceFilters
 from .urarawin import UraraWin
 
 import json
@@ -54,23 +55,44 @@ def register(name: str, preset: Preset) -> None:
 
 def reload():
     g.presets.clear()
-    settings = {}
-    for c in UraraWin.GetAllCharacters():
-        races = {}
-        for r in Race.repository.find():
-            if r.grade == Race.GRADE_G1:
-                races[r.name] = 10
-            elif r.grade == Race.GRADE_G2:
-                races[r.name] = 5
-            elif r.grade == Race.GRADE_OP:
-                races[r.name] = -5
-            elif r.grade == Race.GRADE_PRE_OP:
-                races[r.name] = -10
-            else:
-                races[r.name] = 0
-        settings[c] = {"value":[800,800,800,300,300], "races": races}
-    with open(data.path("UmaMusumeAutoNuturing.json"), "w", encoding="utf-8") as file:
-        file.write(json.dumps(settings, ensure_ascii=False, indent=4))
+    # a new sheet
+    # settings = {}
+    # for c in UraraWin.GetAllCharacters():
+    #     races = {}
+    #     for r in Race.repository.find():
+    #         if r.grade == Race.GRADE_G1:
+    #             races[r.name] = 10
+    #         elif r.grade == Race.GRADE_G2:
+    #             races[r.name] = 5
+    #         elif r.grade == Race.GRADE_OP:
+    #             races[r.name] = -5
+    #         elif r.grade == Race.GRADE_PRE_OP:
+    #             races[r.name] = -10
+    #         else:
+    #             races[r.name] = 0
+    #     settings[c] = {"value":[800,800,800,300,300], "races": races}
+    # with open(data.path("UmaMusumeAutoNuturing.json"), "w", encoding="utf-8") as file:
+    #     file.write(json.dumps(settings, ensure_ascii=False, indent=4))
+    # reset sheet
+    # with open(data.path("UmaMusumeAutoNuturing.json"), "r", encoding="utf-8") as file:
+    #     g.data = json.load(file)
+    #     for d in g.data:
+    #         g.data[d]["value"] = [800,800,800,300,300]
+    #         for r in g.data[d]["races"]:
+    #             race = next(Race.repository.find(filter_by=RaceFilters(name=(r,))))
+    #             if race.grade == Race.GRADE_G1:
+    #                 g.data[d]["races"][r] = 10
+    #             elif race.grade == Race.GRADE_G2:
+    #                 g.data[d]["races"][r] = 5
+    #             elif race.grade == Race.GRADE_OP:
+    #                 g.data[d]["races"][r] = -5
+    #             elif race.grade == Race.GRADE_PRE_OP:
+    #                 g.data[d]["races"][r] = -10
+    #             else:
+    #                 g.data[d]["races"][r] = 0
+    # with open(data.path("UmaMusumeAutoNuturing.json"), "w", encoding="utf-8") as file:
+    #     file.write(json.dumps(g.data, ensure_ascii=False, indent=4))
+    # normal flow
     with open(data.path("UmaMusumeAutoNuturing.json"), "r", encoding="utf-8") as file:
         g.data = json.load(file)
     for d in g.data:

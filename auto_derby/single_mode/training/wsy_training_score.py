@@ -49,52 +49,11 @@ def compute(ctx: Context, trn: Training) -> float:
     preset_gut = preset.get_current().value().get(trn.TYPE_GUTS, -1)
     preset_wisdom = preset.get_current().value().get(trn.TYPE_WISDOM, -1)
 
-    if g.target_config == "custom" or g.target_config == "value":
-        target_speed = g.target_values.get(trn.TYPE_SPEED, -1)
-        if target_speed > 0:
-            spd = compute_target_value(ctx.speed, trn.speed, target_speed)
-        elif target_speed == 0:
-            spd = 0
-        else:
-            spd = compute_target_value(ctx.speed, trn.speed, preset_speed)
-            
-        target_stamina = g.target_values.get(trn.TYPE_STAMINA, -1)
-        if target_stamina > 0:
-            sta = compute_target_value(ctx.stamina, trn.stamina, target_stamina)
-        elif target_stamina == 0:
-            sta = 0
-        else:
-            sta = compute_target_value(ctx.stamina, trn.stamina, preset_stamina)
-        
-        target_power = g.target_values.get(trn.TYPE_POWER, -1)
-        if target_power > 0:
-            pow_ = compute_target_value(ctx.power, trn.power, target_power)
-        elif target_power == 0:
-            pow_ = 0
-        else:
-            pow_ = compute_target_value(ctx.power, trn.power, preset_power)
-        
-        target_gut = g.target_values.get(trn.TYPE_GUTS, -1)
-        if target_gut > 0:
-            gut = compute_target_value(ctx.guts, trn.guts, target_gut)
-        elif target_gut == 0:
-            gut = 0
-        else:
-            gut = compute_target_value(ctx.guts, trn.guts, preset_gut)
-        
-        target_wisdom = g.target_values.get(trn.TYPE_WISDOM, -1)
-        if target_wisdom > 0:
-            wis = compute_target_value(ctx.wisdom, trn.wisdom, target_wisdom)
-        elif target_wisdom == 0:
-            wis = 0
-        else:
-            wis = compute_target_value(ctx.wisdom, trn.wisdom, preset_wisdom)
-    else:
-        spd = compute_target_value(ctx.speed, trn.speed, preset_speed)
-        sta = compute_target_value(ctx.stamina, trn.stamina, preset_stamina)
-        pow_ = compute_target_value(ctx.power, trn.power, preset_power)
-        gut = compute_target_value(ctx.guts, trn.guts, preset_gut)
-        wis = compute_target_value(ctx.wisdom, trn.wisdom, preset_wisdom)
+    spd = compute_target_value(ctx.speed, trn.speed, preset_speed)
+    sta = compute_target_value(ctx.stamina, trn.stamina, preset_stamina)
+    pow_ = compute_target_value(ctx.power, trn.power, preset_power)
+    gut = compute_target_value(ctx.guts, trn.guts, preset_gut)
+    wis = compute_target_value(ctx.wisdom, trn.wisdom, preset_wisdom)
 
 
     skill = compute_skill(ctx, trn, t_now)

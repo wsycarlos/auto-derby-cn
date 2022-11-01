@@ -37,29 +37,6 @@ def _parse_training_levels(spec: Text) -> Dict[TrainingType, int]:
             )
     return ret
     
-def _parse_training_values(spec: Text) -> Dict[TrainingType, int]:
-    ret: Dict[TrainingType, int] = {}
-    for k, v in zip(
-        (
-            Training.TYPE_SPEED,
-            Training.TYPE_STAMINA,
-            Training.TYPE_POWER,
-            Training.TYPE_GUTS,
-            Training.TYPE_WISDOM,
-        ),
-        spec.split(","),
-    ):
-        if not v:
-            continue
-        ret[k] = int(v)
-        if ret[k] > 1200:
-            warnings.warn(
-                "target training value greater than 1200 has same effect as 1200",
-                RuntimeWarning,
-            )
-    return ret
-
-
 def _default_on_single_mode_crane_game(ctx: single_mode.Context) -> None:
     pass
 
@@ -149,15 +126,6 @@ class config:
     single_mode_target_training_levels = _parse_training_levels(
         os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_LEVELS", "")
     )
-    single_mode_target_training_values = _parse_training_values(
-        os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES", "")
-    )
-    single_mode_target_config = os.getenv("AUTO_DERBY_SINGLE_MODE_TARGET_CONFIG", "preset")
-
-    single_mode_training_force_races = tuple(i for i in os.getenv("AUTO_DERBY_SINGLE_MODE_FORCE_RACES", "").split(",") if i)
-    single_mode_training_prefered_races = tuple(i for i in os.getenv("AUTO_DERBY_SINGLE_MODE_PREFERED_RACES", "").split(",") if i)
-    single_mode_training_avoid_races = tuple(i for i in os.getenv("AUTO_DERBY_SINGLE_MODE_AVOID_RACES", "").split(",") if i)
-
     use_legacy_screenshot = (
         os.getenv("AUTO_DERBY_USE_LEGACY_SCREENSHOT", "").lower() == "true"
     )
@@ -208,13 +176,8 @@ class config:
         single_mode.race.g.race_class = cls.single_mode_race_class
         single_mode.training.g.image_path = cls.single_mode_training_image_path
         single_mode.training.g.target_levels = cls.single_mode_target_training_levels
-        single_mode.training.g.target_values = cls.single_mode_target_training_values
-        single_mode.training.g.target_config = cls.single_mode_target_config
         single_mode.training.g.training_class = cls.single_mode_training_class
         single_mode.training.g.partner_class = cls.single_mode_training_partner_class
-        single_mode.training.g.force_races = cls.single_mode_training_force_races
-        single_mode.training.g.prefered_races = cls.single_mode_training_prefered_races
-        single_mode.training.g.avoid_races = cls.single_mode_training_avoid_races
         single_mode.item.g.label_path = cls.single_mode_item_label_path
         single_mode.item.g.prompt_disabled = cls.single_mode_item_prompt_disabled
         single_mode.item.g.item_class = cls.single_mode_item_class

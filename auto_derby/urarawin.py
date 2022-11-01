@@ -261,7 +261,7 @@ class UraraWin:
     def GetAllCharacters()-> List[Text]:
         results: List[Text] = []
         name_set = re.compile('\[(.*?)\](.*)')
-        for c1 in UraraWin.instance._data.Charactor.three_star.keys():
+        for c1 in UraraWin.instance._data.Charactor.one_star.keys():
             for _c, _n in name_set.findall(c1):
                 _cn_c = UraraWin.Translated(_c)
                 _cn_n = UraraWin.Translated(_n)
@@ -275,7 +275,7 @@ class UraraWin:
                 c2 = c2.replace(_c, _cn_c)
                 c2 = c2.replace(_n, _cn_n)
             results.append(c2)
-        for c3 in UraraWin.instance._data.Charactor.one_star.keys():
+        for c3 in UraraWin.instance._data.Charactor.three_star.keys():
             for _c, _n in name_set.findall(c3):
                 _cn_c = UraraWin.Translated(_c)
                 _cn_n = UraraWin.Translated(_n)

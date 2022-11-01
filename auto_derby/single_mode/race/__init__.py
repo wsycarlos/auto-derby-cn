@@ -9,7 +9,7 @@ from .game_data import (
     reload_on_demand,  # type: ignore
 )
 from .globals import g
-from .race import Race, Course
+from .race import Race, Course, RaceFilters
 from .race_result import RaceResult
 from .history import History
 

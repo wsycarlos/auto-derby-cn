@@ -1,6 +1,6 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  Title="Auto Derby Launcher"
+  Title="&#x8d5b;&#x9a6c;&#x5a18;&#x81ea;&#x52a8;&#x5316;"
   Height="880"
   Width="500"
   Topmost="True">
@@ -12,7 +12,7 @@
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
-      <RowDefinition Height="80" />
+      <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
       <RowDefinition Height="60" />
@@ -23,7 +23,7 @@
     </Grid.RowDefinitions>
 
     <StackPanel>
-      <Label>Python executable</Label>
+      <Label>Python &#x5b89;&#x88c5;&#x4f4d;&#x7f6e;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
@@ -33,27 +33,12 @@
           Text="{Binding PythonExecutablePath}"
           MaxLines="1" />
         <Button x:Name="choosePythonExecutablePathButton"
-          Grid.Column="1">choose...</Button>
+          Grid.Column="1">&#x9009;&#x62e9;...</Button>
       </Grid>
     </StackPanel>
 
     <StackPanel Grid.Row="1">
-      <Label>ADB address (experimental, use format like 127.0.0.1:5555)</Label>
-      <TextBox Text="{Binding ADBAddress, UpdateSourceTrigger=PropertyChanged}"
-        MaxLines="1" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="2">
-      <Label>Job</Label>
-      <ComboBox x:Name="comboBox1"
-        ItemsSource="{Binding JobOptions1}"
-        SelectedValuePath="Value"
-        DisplayMemberPath="Label"
-        SelectedValue="{Binding Job}" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="3">
-      <Label>Single mode choices</Label>
+      <Label>&#x5355;&#x4eba;&#x6a21;&#x5f0f;&#x9009;&#x9879;&#x6587;&#x4ef6;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
@@ -63,48 +48,12 @@
           Text="{Binding SingleModeChoicesDataPath}"
           MaxLines="1" />
         <Button x:Name="chooseSingleModeChoicesDataPathButton"
-          Grid.Column="1">choose...</Button>
+          Grid.Column="1">&#x9009;&#x62e9;...</Button>
       </Grid>
     </StackPanel>
 
-    <StackPanel Grid.Row="4">
-      <Label>Config</Label>
-      <ComboBox x:Name="comboBox2"
-        ItemsSource="{Binding ConfigOptions1, UpdateSourceTrigger=PropertyChanged}"
-        SelectedValuePath="Value"
-        DisplayMemberPath="Label"
-        SelectedValue="{Binding Config}" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="5">
-      <Label>Preset</Label>
-      <ComboBox x:Name="comboBox3"
-        ItemsSource="{Binding PresetOptions1, UpdateSourceTrigger=PropertyChanged}"
-        SelectedValuePath="Value"
-        DisplayMemberPath="Label"
-        SelectedValue="{Binding Preset}" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="6">
-      <Label>
-        <TextBlock>
-          Target training values (seperated by comma, omit value for default)
-          <LineBreak />
-          `600,600,600,0,` means speed=600 stamina=600 power=600 guts=0 wisdom=default
-        </TextBlock>
-      </Label>
-      <TextBox Text="{Binding TargetTrainingValues, UpdateSourceTrigger=PropertyChanged}"
-        MaxLines="1" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="7">
-      <Label>Pause if race order greater than</Label>
-      <TextBox Text="{Binding PauseIfRaceOrderGt, UpdateSourceTrigger=PropertyChanged}"
-        MaxLines="1" />
-    </StackPanel>
-
-    <StackPanel Grid.Row="8">
-      <Label>Plugins seperated by comma</Label>
+    <StackPanel Grid.Row="2">
+      <Label>&#x63d2;&#x4ef6;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
@@ -113,49 +62,125 @@
         <TextBox Text="{Binding Plugins, UpdateSourceTrigger=PropertyChanged}"
           MaxLines="1" />
         <Button x:Name="selectPluginButton"
-          Grid.Column="1">select...</Button>
+          Grid.Column="1">&#x9009;&#x62e9;...</Button>
+      </Grid>
+    </StackPanel>
+
+    <StackPanel Grid.Row="3">
+      <Label>ADB &#x5730;&#x5740; (&#x4f8b;&#x5982; 127.0.0.1:7555)</Label>
+      <TextBox Text="{Binding ADBAddress, UpdateSourceTrigger=PropertyChanged}"
+        MaxLines="1" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="4">
+      <Label>&#x4efb;&#x52a1;</Label>
+      <ComboBox x:Name="comboBox1"
+        ItemsSource="{Binding JobOptions1}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding Job}" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="5">
+      <Label>&#x9884;&#x6d4b;&#x6392;&#x540d;&#x5927;&#x4e8e;&#x591a;&#x5c11;&#x65f6;&#x81ea;&#x52a8;&#x6682;&#x505c;</Label>
+      <TextBox Text="{Binding PauseIfRaceOrderGt, UpdateSourceTrigger=PropertyChanged}"
+        MaxLines="1" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="6">
+      <Label>&#x81ea;&#x52a8;&#x517b;&#x9a6c;&#x4f7f;&#x7528;&#x914d;&#x7f6e;</Label>
+      <ComboBox x:Name="comboBox2"
+        ItemsSource="{Binding PresetOptions1, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding Preset}" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="7">
+      <Label>&#x8bad;&#x7ec3;&#x76ee;&#x6807;&#x6570;&#x503c;</Label>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="10" />
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="15" />
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="15" />
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="15" />
+          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="15" />
+          <ColumnDefinition Width="80" />
+        </Grid.ColumnDefinitions>
+        <TextBox Text="{Binding TargetSpeed, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="1" />
+        <TextBox Text="{Binding TargetStamina, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="3"/>
+        <TextBox Text="{Binding TargetPower, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="5"/>
+        <TextBox Text="{Binding TargetGut, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="7"/>
+        <TextBox Text="{Binding TargetWisdom, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="9"/>
+      </Grid>
+      
+    </StackPanel>
+
+    <StackPanel Grid.Row="8">
+      <Label>&#x0047;&#x0031;&#x6bd4;&#x8d5b;&#x4f18;&#x5148;&#x7ea7;</Label>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition Width="120" />
+        </Grid.ColumnDefinitions>
+        <ComboBox x:Name="comboBox3"
+        ItemsSource="{Binding G1RaceOptions, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding G1Race}" />
+        <TextBox Text="{Binding G1Value, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="1" />
       </Grid>
     </StackPanel>
 
     <StackPanel Grid.Row="9">
-      <Label>Races Force to Play seperated by comma</Label>
+      <Label>&#x0047;&#x0032;&#x6bd4;&#x8d5b;&#x4f18;&#x5148;&#x7ea7;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
-          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="120" />
         </Grid.ColumnDefinitions>
-        <TextBox Text="{Binding Force_Races, UpdateSourceTrigger=PropertyChanged}"
-          MaxLines="1" />
-        <Button x:Name="selectForceRacesButton"
-          Grid.Column="1">select...</Button>
+        <ComboBox x:Name="comboBox4"
+        ItemsSource="{Binding G2RaceOptions, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding G2Race}" />
+        <TextBox Text="{Binding G2Value, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="1" />
       </Grid>
     </StackPanel>
 
     <StackPanel Grid.Row="10">
-      <Label>Races Prefered to Play seperated by comma</Label>
+      <Label>&#x0047;&#x0033;&#x6bd4;&#x8d5b;&#x4f18;&#x5148;&#x7ea7;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
-          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="120" />
         </Grid.ColumnDefinitions>
-        <TextBox Text="{Binding Prefered_Races, UpdateSourceTrigger=PropertyChanged}"
-          MaxLines="1" />
-        <Button x:Name="selectPreferedRacesButton"
-          Grid.Column="1">select...</Button>
+        <ComboBox x:Name="comboBox5"
+        ItemsSource="{Binding G3RaceOptions, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding G3Race}" />
+        <TextBox Text="{Binding G3Value, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="1" />
       </Grid>
     </StackPanel>
 
     <StackPanel Grid.Row="11">
-      <Label>Races Avoid to Play seperated by comma</Label>
+      <Label>&#x5176;&#x4ed6;&#x6bd4;&#x8d5b;&#x4f18;&#x5148;&#x7ea7;</Label>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition />
-          <ColumnDefinition Width="80" />
+          <ColumnDefinition Width="120" />
         </Grid.ColumnDefinitions>
-        <TextBox Text="{Binding Avoid_Races, UpdateSourceTrigger=PropertyChanged}"
-          MaxLines="1" />
-        <Button x:Name="selectAvoidRacesButton"
-          Grid.Column="1">select...</Button>
+        <ComboBox x:Name="comboBox6"
+        ItemsSource="{Binding OtherRaceOptions, UpdateSourceTrigger=PropertyChanged}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Label"
+        SelectedValue="{Binding OtherRace}" />
+        <TextBox Text="{Binding OtherValue, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" Grid.Column="1" />
       </Grid>
     </StackPanel>
 

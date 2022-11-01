@@ -54,24 +54,6 @@ def main():
         help="preset name to enable",
     )
     parser.add_argument(
-        "--force_races",
-        nargs="+",
-        default=config.single_mode_training_force_races,
-        help="races names force to play",
-    )
-    parser.add_argument(
-        "--prefered_races",
-        nargs="+",
-        default=config.single_mode_training_prefered_races,
-        help="races names prefered to play",
-    )
-    parser.add_argument(
-        "--avoid_races",
-        nargs="+",
-        default=config.single_mode_training_avoid_races,
-        help="races names avoid to play",
-    )
-    parser.add_argument(
         "--adb",
         help="adb connect address like `127.0.0.1:5037`",
         default=config.ADB_ADDRESS,
@@ -79,10 +61,6 @@ def main():
     args = parser.parse_args()
     job = available_jobs.get(args.job)
     config.ADB_ADDRESS = args.adb
-
-    config.single_mode_training_force_races = args.force_races
-    config.single_mode_training_prefered_races = args.prefered_races
-    config.single_mode_training_avoid_races = args.avoid_races
 
     def _client() -> clients.Client:
         if config.ADB_ADDRESS:

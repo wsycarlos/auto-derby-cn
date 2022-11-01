@@ -28,9 +28,9 @@ $jsonlib = (get-item $PSScriptRoot\Newtonsoft.Json.dll).fullname
 
 Add-Type -Language CSharp -ReferencedAssemblies $jsonlib ([string](Get-Content "$PSScriptRoot\launcher_zh-tw.cs"))
 
-$preset = New-Object Wsycarlos.AutoDerby.PresetOptions -ArgumentList @([string][System.IO.Path]::GetFullPath("auto_derby/data/UmaMusumeAutoNuturing.json"))
+$preset_data = New-Object Wsycarlos.AutoDerby.PresetData -ArgumentList @([string][System.IO.Path]::GetFullPath("auto_derby/data/UmaMusumeAutoNuturing.json"), [string][System.IO.Path]::GetFullPath("auto_derby/data/single_mode_races.jsonl"), [string][System.IO.Path]::GetFullPath("auto_derby/data/localizations.csv"))
 
-$data = New-Object Wsycarlos.AutoDerby.DataContext -Property @{
+$data = New-Object Wsycarlos.AutoDerby.DataContext -ArgumentList $preset_data -Property @{
     DefaultSingleModeChoicesDataPath = [System.IO.Path]::GetFullPath("data/single_mode_choices.csv")
     DefaultPythonExecutablePath      = . {
         try {
@@ -40,7 +40,6 @@ $data = New-Object Wsycarlos.AutoDerby.DataContext -Property @{
             
         }
     }
-    PresetOptions1 = $preset
 }
 $mainWindow.DataContext = $data
 
@@ -103,43 +102,6 @@ $mainWindow.Content.FindName('selectPluginButton').add_Click(
     }
 )
 
-$mainWindow.Content.FindName('selectForceRacesButton').add_Click( 
-    {
-        $env:AUTO_DERBY_SINGLE_MODE_FORCE_RACES = $data.Force_Races
-        & $data.PythonExecutablePath "$PSScriptRoot\select_force_races.py" | ForEach-Object {
-            Write-Host $_
-            if ($_.StartsWith("AUTO_DERBY_SINGLE_MODE_FORCE_RACES=")) {
-                $data.Force_Races = $_.Substring(35)
-            }
-        }
-    }
-)
-
-$mainWindow.Content.FindName('selectPreferedRacesButton').add_Click( 
-    {
-        $env:AUTO_DERBY_SINGLE_MODE_PREFERED_RACES = $data.Prefered_Races
-        & $data.PythonExecutablePath "$PSScriptRoot\select_prefered_races.py" | ForEach-Object {
-            Write-Host $_
-            if ($_.StartsWith("AUTO_DERBY_SINGLE_MODE_PREFERED_RACES=")) {
-                $data.Prefered_Races = $_.Substring(38)
-            }
-        }
-    }
-)
-
-$mainWindow.Content.FindName('selectAvoidRacesButton').add_Click( 
-    {
-        $env:AUTO_DERBY_SINGLE_MODE_AVOID_RACES = $data.Avoid_Races
-        & $data.PythonExecutablePath "$PSScriptRoot\select_avoid_races.py" | ForEach-Object {
-            Write-Host $_
-            if ($_.StartsWith("AUTO_DERBY_SINGLE_MODE_AVOID_RACES=")) {
-                $data.Avoid_Races = $_.Substring(35)
-            }
-        }
-    }
-)
-
-
 if (-not $mainWindow.ShowDialog()) {
     "Cancelled"
     Exit 0
@@ -154,11 +116,6 @@ $data | Format-List -Property (
     "PauseIfRaceOrderGt",
     "Plugins",
     "Preset",
-    "Force_Races",
-    "Prefered_Races",
-    "Avoid_Races",
-    "TargetTrainingValues",
-    "Distance",
     "ADBAddress",
     @{
         Name       = "Version"
@@ -196,11 +153,6 @@ $env:AUTO_DERBY_PAUSE_IF_RACE_ORDER_GT = $data.PauseIfRaceOrderGt
 $env:AUTO_DERBY_PLUGINS = $data.Plugins
 $env:AUTO_DERBY_PRESET = $data.Preset
 $env:AUTO_DERBY_ADB_ADDRESS = $data.ADBAddress
-$env:AUTO_DERBY_SINGLE_MODE_TARGET_CONFIG = $data.Config
-$env:AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES = $data.TargetTrainingValues
-$env:AUTO_DERBY_SINGLE_MODE_FORCE_RACES = $data.Force_Races
-$env:AUTO_DERBY_SINGLE_MODE_PREFERED_RACES = $data.Prefered_Races
-$env:AUTO_DERBY_SINGLE_MODE_AVOID_RACES = $data.Avoid_Races
 
 $requireAdmin = (-not $data.ADBAddress)
 
@@ -222,11 +174,6 @@ set "AUTO_DERBY_PLUGINS=$($env:AUTO_DERBY_PLUGINS)"
 set "AUTO_DERBY_PRESET=$($env:AUTO_DERBY_PRESET)"
 set "AUTO_DERBY_SINGLE_MODE_CHOICE_PATH=$($env:AUTO_DERBY_SINGLE_MODE_CHOICE_PATH)"
 set "AUTO_DERBY_SINGLE_MODE_EVENT_IMAGE_PATH=$($env:AUTO_DERBY_SINGLE_MODE_EVENT_IMAGE_PATH)"
-set "AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES=$($env:AUTO_DERBY_SINGLE_MODE_TARGET_TRAINING_VALUES)"
-set "AUTO_DERBY_SINGLE_MODE_FORCE_RACES=$($env:AUTO_DERBY_SINGLE_MODE_FORCE_RACES)"
-set "AUTO_DERBY_SINGLE_MODE_PREFERED_RACES=$($env:AUTO_DERBY_SINGLE_MODE_PREFERED_RACES)"
-set "AUTO_DERBY_SINGLE_MODE_AVOID_RACES=$($env:AUTO_DERBY_SINGLE_MODE_AVOID_RACES)"
-set "AUTO_DERBY_SINGLE_MODE_TARGET_CONFIG=$($env:AUTO_DERBY_SINGLE_MODE_TARGET_CONFIG)"
 set "AUTO_DERBY_SINGLE_MODE_TRAINING_IMAGE_PATH=$($env:AUTO_DERBY_SINGLE_MODE_TRAINING_IMAGE_PATH)"
 set "AUTO_DERBY_WEB_LOG_DISABLED=$($env:AUTO_DERBY_WEB_LOG_DISABLED)"
 set "AUTO_DERBY_WEB_LOG_BUFFER_PATH=$($env:AUTO_DERBY_WEB_LOG_BUFFER_PATH)"
