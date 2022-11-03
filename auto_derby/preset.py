@@ -61,9 +61,9 @@ def reload():
     #     races = {}
     #     for r in Race.repository.find():
     #         if r.grade == Race.GRADE_G1:
-    #             races[r.name] = 10
-    #         elif r.grade == Race.GRADE_G2:
     #             races[r.name] = 5
+    #         elif r.grade == Race.GRADE_G2:
+    #             races[r.name] = 0
     #         elif r.grade == Race.GRADE_OP:
     #             races[r.name] = -5
     #         elif r.grade == Race.GRADE_PRE_OP:
@@ -72,7 +72,7 @@ def reload():
     #             races[r.name] = 0
     #     settings[c] = {"value":[800,800,800,300,300], "races": races}
     # with open(data.path("UmaMusumeAutoNuturing.json"), "w", encoding="utf-8") as file:
-    #     file.write(json.dumps(settings, ensure_ascii=False, indent=4))
+    #     file.write(json.dumps(settings, ensure_ascii=False, indent=2))
     # reset sheet
     # with open(data.path("UmaMusumeAutoNuturing.json"), "r", encoding="utf-8") as file:
     #     g.data = json.load(file)
@@ -91,7 +91,7 @@ def reload():
     #             else:
     #                 g.data[d]["races"][r] = 0
     # with open(data.path("UmaMusumeAutoNuturing.json"), "w", encoding="utf-8") as file:
-    #     file.write(json.dumps(g.data, ensure_ascii=False, indent=4))
+    #     file.write(json.dumps(g.data, ensure_ascii=False, indent=2))
     # normal flow
     with open(data.path("UmaMusumeAutoNuturing.json"), "r", encoding="utf-8") as file:
         g.data = json.load(file)
