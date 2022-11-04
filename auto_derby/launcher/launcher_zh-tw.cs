@@ -206,7 +206,7 @@ namespace Wsycarlos.AutoDerby
         {
             get
             {
-                return (string)key.GetValue("Plugins", "prompt_on_end,pause_before_race_continue,auto_crane,\u0053\u0053\u0052\u99ff\u5ddd\u305f\u3065\u306a,wsy_custom_training");
+                return (string)key.GetValue("Plugins", "prompt_on_end,pause_before_race_continue,auto_crane,\u0053\u0053\u0052\u99ff\u5ddd\u624b\u7db1,wsy_custom_training");
             }
             set
             {

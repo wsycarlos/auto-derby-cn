@@ -13,8 +13,11 @@ import easyocr
 from zhconv import convert
 
 from .. import action, app, templates, mathtools, terminal, wintools, template
+from ..single_mode import Context
+from ..single_mode.go_out import Option
+from ..scenes.single_mode.go_out_menu import _recognize_menu
 from ..urarawin import UraraOption, UraraWin
-from typing import List, Text
+from typing import List, Text, Tuple
 from thefuzz import process
 
 ALL_OPTIONS = [
@@ -36,8 +39,8 @@ def stop_for_watching(target_hwnd, window, offset_y):
         time.sleep(0.1)
         new_rect = wintools.GetWindowRect(target_hwnd)
         window.move(new_rect.left, new_rect.top + offset_y)
-        count_option_1 = action.count_image(templates.SINGLE_MODE_OPTION1)
-        if count_option_1 <= 0:
+        count_ = action.count_image(templates.SINGLE_MODE_OPTION1, templates.SINGLE_MODE_GO_OUT_MENU_TITLE)
+        if count_ <= 0:
             window.write_event_value('-THREAD-', 0)
             return
 
@@ -139,8 +142,8 @@ def select_option(options_text:Text, option_choice_list: List[Text]):
     else:
         return option_choice[0], False, False
 
-def layout_padding(x: int, y: int):
-    return [sg.Column([], size=(x, y))]
+def layout_padding(padding):
+    return [sg.Column([], size=padding)]
 
 def layout_text(text: Text, x: int, option_height_y: float, option_offset_x: float):
     return [sg.Column([], size=(x, option_height_y)), sg.Text(text, background_color='white'), sg.Column([], size=(option_offset_x, option_height_y))]
@@ -239,79 +242,60 @@ def display_window(hwnd, layout, size_x: int, size_y: int, border_size_y):
             break
     window.close()
 
-def process_window(event_screen: Image, target_window: wintools.WinWindow, options: List[UraraOption]):
+def get_window_related_size(event_screen: Image, target_window: wintools.WinWindow):
 
+    event_screen_width = event_screen.width
+    event_screen_height = event_screen.height
+    
     c_rect = wintools.GetClientRect(target_window.hwnd)
 
     size_x = c_rect.right - c_rect.left
     #size_y = c_rect.bottom - c_rect.top
 
-    event_screen_width = event_screen.width
-    event_screen_height = event_screen.height
-
     event_screen_aspect_ratio = event_screen_height / event_screen_width
     real_size_y = (int)(size_x * event_screen_aspect_ratio)
+    size_height_ratio = real_size_y / event_screen_height
+
+    return size_height_ratio, size_x, real_size_y
+
+def process_window(event_screen: Image, target_window: wintools.WinWindow, options: List[UraraOption]):
+
+    size_height_ratio, size_x, real_size_y = get_window_related_size(event_screen, target_window)
     
     border_size_y = 50
 
-    size_height_ratio = real_size_y / event_screen_height
-
-    should_create_window = False
-    layout = []
-
     options_length = len(options)
 
-    if options_length == 0:
-        pass
-    elif options_length == 1:
-        pass
-    else:
-        should_create_window = True
-        
+    if options_length >= 2:
+
         option_offset_y = (int)(16 * size_height_ratio)
         option_height_y = (int)(55 * size_height_ratio)
         option_offset_x = (int)(19 * size_height_ratio)
 
         pos1_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION1, size_height_ratio)
-
-        if pos1_y >= 0:
-            layout.append(layout_padding(size_x, pos1_y - option_offset_y))
-            layout.append(layout_text(translate_effect(options[0].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
-
         pos2_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION2, size_height_ratio)
+        pos3_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
+        pos4_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION4, size_height_ratio)
+        pos5_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION5, size_height_ratio)
 
-        if pos2_y >= 0:
-            layout.append(layout_padding(size_x, pos2_y - pos1_y - option_height_y))
-            layout.append(layout_text(translate_effect(options[1].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+        positions = [pos1_y, pos2_y, pos3_y, pos4_y, pos5_y]
 
-        if options_length > 2:
-            
-            pos3_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
+        paddings = [(size_x, pos1_y - option_offset_y), (size_x, pos2_y - pos1_y - option_height_y), (size_x, pos3_y - pos2_y - option_height_y), (size_x, pos4_y - pos3_y - option_height_y), (size_x, pos5_y - pos4_y - option_height_y)]
 
-            if pos3_y >= 0:
-                layout.append(layout_padding(size_x, pos3_y - pos2_y - option_height_y))
-                layout.append(layout_text(translate_effect(options[2].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+        layout = []
+        for i in range(options_length):
+            try:
+                if positions[i] >= 0:
+                    layout.append(layout_padding(paddings[i]))
+                    layout.append(layout_text(translate_effect(options[i].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
+            except OSError as err:
+                print("OS error:", err)
+            except ValueError:
+                print("Could not convert data to an integer.")
+            except Exception as err:
+                print(f"Unexpected {err=}, {type(err)=}")
 
-            if options_length > 3:
 
-                pos4_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
-                
-                if pos4_y >= 0:
-                    layout.append(layout_padding(size_x, pos4_y - pos3_y - option_height_y))
-                    layout.append(layout_text(translate_effect(options[3].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
-
-                if options_length > 4:
-
-                    pos5_y = pos_y_one_option(event_screen, templates.SINGLE_MODE_OPTION3, size_height_ratio)
-
-                    if pos5_y >= 0:
-                        layout.append(layout_padding(size_x, pos5_y - pos4_y - option_height_y))
-                        layout.append(layout_text(translate_effect(options[4].Effect), (int)(size_x / 2), option_height_y, option_offset_x))
-
-                    if options_length > 5:
-                        terminal.pause("More than 5 options available!")
-
-    if should_create_window:
         display_window(target_window.hwnd, layout, size_x, real_size_y, border_size_y)
 
 def find_event_options(name_text: Text, options_text: Text, options_result):
@@ -410,18 +394,58 @@ def option_tips():
 
     while True:
 
-        action.wait_image(templates.SINGLE_MODE_OPTION1)
-        
-        time.sleep(0.2)  # wait animation
-        
         event_screen = app.device.screenshot(max_age=0)
 
-        name_text, options_text, options_result = process_ocr(event_screen)
+        try:
+            tmpl, _ =  next(template.match(event_screen, templates.SINGLE_MODE_OPTION1, templates.SINGLE_MODE_GO_OUT_MENU_TITLE))
+            
+            if tmpl.name == templates.SINGLE_MODE_OPTION1:
+                name_text, options_text, options_result = process_ocr(event_screen)
+                found, options = find_event_options(name_text, options_text, options_result)
+                if found:
+                    process_window(event_screen, target_window, options)
+                else:
+                    terminal.pause(("No Available Option Found for %s")%name_text)
+                    UraraWin.Reload()
+            else:
+                event_screen = app.device.screenshot(max_age=0)
+                
+                go_out_options = tuple(_recognize_menu(event_screen))
 
-        found, options = find_event_options(name_text, options_text, options_result)
+                size_height_ratio, size_x, real_size_y = get_window_related_size(event_screen, target_window)
 
-        if found:
-            process_window(event_screen, target_window, options)
-        else:
-            terminal.pause(("No Available Option Found for %s")%name_text)
-            UraraWin.Reload()
+                option_offset_y = (int)(16 * size_height_ratio)
+                option_height_y = (int)(55 * size_height_ratio)
+                option_offset_x = (int)(19 * size_height_ratio)
+                
+                border_size_y = 50
+
+                layout = []
+
+                for i in go_out_options:
+                    if i.type == Option.TYPE_SUPPORT:
+
+                        text = ""                        
+                        ctx = Context.new()
+                        ctx.max_vitality = 100
+
+                        mood = i.mood_rate(ctx)
+                        if mood > 0:
+                            text += "干劲提升" + (str)(mood) + "档;"
+                        heal = i.heal_rate(ctx)
+                        if heal > 0:
+                            text += "治疗异常状态;"
+                        vit = (int)(i.vitality(ctx) * 100)
+                        if vit > 0:
+                            text += "体力恢复" + (str)(vit) + ";"
+
+                        pos_y = (int)((i.position[1])*size_height_ratio)
+
+                        layout.append(layout_padding((size_x, pos_y - option_offset_y)))
+                        layout.append(layout_text(text, (int)(size_x / 2), option_height_y, option_offset_x))
+
+                display_window(target_window.hwnd, layout, size_x, real_size_y, border_size_y)
+        except:
+            time.sleep(0.01)
+        
+        
