@@ -331,6 +331,93 @@ class Race:
     def to_snapshot(self):
         return str(self)
 
+    def get_best_course(self, ctx: Context) -> Course:
+        max_score = 0
+        current_course = self.courses[0]
+        spd = ctx.speed
+        sta = ctx.stamina
+        spd *= ctx.mood.race_rate
+        sta *= ctx.mood.race_rate
+        for course in self.courses:
+            single_mode_bonus = 400
+            spd += single_mode_bonus
+            sta += single_mode_bonus
+            distance = course.distance_status(ctx)
+            d_spd_rate = {
+                "S": (1.05),
+                "A": (1.0),
+                "B": (0.9),
+                "C": (0.8),
+                "D": (0.6),
+                "E": (0.4),
+                "F": (0.2),
+                "G": (0.1),
+            }[distance[1]]        
+            spd *= d_spd_rate
+
+            hp = course.distance + 0.8 * sta
+
+            expected_spd = (
+                mathtools.interpolate(
+                    ctx.turn_count(),
+                    (
+                        (0, 700),
+                        (24, 700),
+                        (48, 900),
+                        (72, 1100),
+                    ),
+                )
+                * {
+                    self.GRADE_G1: 1,
+                    self.GRADE_G2: 0.9,
+                    self.GRADE_G3: 0.8,
+                    self.GRADE_PRE_OP: 0.7,
+                    self.GRADE_OP: 0.7,
+                    self.GRADE_NOT_WINNING: 0.6,
+                    self.GRADE_DEBUT: 0.6,
+                }[self.grade]
+                * mathtools.interpolate(
+                    course.distance,
+                    (
+                        (0, 1.1),
+                        (1200, 1.05),
+                        (1600, 1.0),
+                        (3200, 0.9),
+                    ),
+                )
+            )
+
+            expected_hp = (
+                course.distance
+                * mathtools.interpolate(
+                    ctx.turn_count(),
+                    (
+                        (0, 1.0),
+                        (24, 1.4),
+                        (48, 1.6),
+                        (72, 1.8),
+                        (75, 2.0),
+                    ),
+                )
+                * {
+                    self.GRADE_G1: 1,
+                    self.GRADE_G2: 0.9,
+                    self.GRADE_G3: 0.85,
+                    self.GRADE_PRE_OP: 0.8,
+                    self.GRADE_OP: 0.8,
+                    self.GRADE_NOT_WINNING: 0.7,
+                    self.GRADE_DEBUT: 0.7,
+                }[self.grade]
+            )
+
+            score = (spd * hp) / (expected_spd * expected_hp)
+
+            if score >= max_score:
+                max_score = score
+                current_course = course
+
+        return current_course
+
     @property
     def _reward_buff_alias(self):
         return self.reward_buff

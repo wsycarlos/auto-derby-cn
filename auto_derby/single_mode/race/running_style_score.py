@@ -11,20 +11,6 @@ if TYPE_CHECKING:
 
 from ... import mathtools, app
 
-
-def _get_course(ctx: Context, race: Race) -> Course:
-    if len(race.courses) == 1:
-        return race.courses[0]
-
-    def _sort_key(course: Course):
-        return (
-            -course.ground_status(ctx)[0],
-            -course.distance_status(ctx)[0],
-        )
-
-    return sorted(race.courses, key=_sort_key)[0]
-
-
 def compute(
     ctx: Context,
     race: Race,
@@ -54,7 +40,7 @@ def compute(
     wis *= ctx.mood.race_rate
 
     base_speed_coefficient = 1
-    course = _get_course(ctx, race)
+    course = race.get_best_course(ctx)
     for i in course.target_statuses:
         base_speed_coefficient *= 1 + 0.1 * min(
             2,
@@ -149,7 +135,7 @@ def compute(
     )
     sta += gut_as_sta
     wis_as_spd = mathtools.interpolate(
-        int(gut),
+        int(wis),
         (
             (0, 0),
             (900, 200),
@@ -158,7 +144,7 @@ def compute(
     )
     spd += wis_as_spd
     wis_as_sta = mathtools.interpolate(
-        int(gut),
+        int(wis),
         (
             (0, 0),
             (900, 100),

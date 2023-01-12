@@ -231,6 +231,8 @@ class RaceMenuScene(Scene):
                     continue
                 if course not in race.courses:
                     continue
+                if course != race.get_best_course(ctx):
+                    continue
                 app.device.tap((*pos, *rp.vector2((200, 20), 540)))
                 return
         raise ValueError("not found: %s" % race)
